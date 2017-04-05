@@ -8,6 +8,7 @@ dependencies:
   - matplotlib
   - ipython
   - jupyter
+  - pandoc
   - pip:
     - sphinx
     - sphinx_rtd_theme
