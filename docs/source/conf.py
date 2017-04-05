@@ -60,8 +60,9 @@ author = 'USask ARG and the LOTUS Group'
 # built documents.
 #
 # The short X.Y version.
-from LOTUS_regression._version import get_versions
-version = get_versions()['version']
+import LOTUS_regression
+
+version = LOTUS_regression.__version__
 # The full version, including alpha/beta/rc tags.
 release = version
 
