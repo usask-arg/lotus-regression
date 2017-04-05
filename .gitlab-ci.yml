@@ -1,0 +1,13 @@
+image: continuumio/anaconda3
+stages:
+  - test
+
+test_py36:
+  stage: test
+  tags:
+    - docker
+  script:
+    - conda create -n test_py36 python=3.6
+    - source activate test_py36
+    - python setup.py install
+    - nosetests
