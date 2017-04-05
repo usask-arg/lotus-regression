@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
+import versioneer
 
 setup(
     name='LOTUS-regression',
-    version='0.1.0',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
     url='https://arggit.usask.ca/LOTUS/LOTUS-regression',
     license='MIT',

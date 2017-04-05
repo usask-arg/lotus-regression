@@ -1,0 +1,3 @@
+include versioneer.py
+include LOTUS_regression/_version.py
+include LOTUS_regression/regression.py
