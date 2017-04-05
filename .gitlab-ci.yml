@@ -7,7 +7,7 @@ test_py36:
   tags:
     - docker
   script:
-    - conda create -n test_py36 python=3.6
-    - source activate test_py36
+    - conda env create --file ci/requirements-py36.yml
+    - source activate test_env
     - python setup.py install
     - nosetests
