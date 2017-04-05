@@ -8,9 +8,9 @@ Welcome to LOTUS Regression's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :glob:
 
-   quickstart
+   examples/Quickstart
    api_reference
 
 

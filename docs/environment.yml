@@ -5,6 +5,9 @@ dependencies:
   - pandas
   - scipy
   - statsmodels
+  - matplotlib
   - pip:
     - sphinx
     - sphinx_rtd_theme
+    - nbsphinx
+    - pandoc

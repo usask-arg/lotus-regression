@@ -10,6 +10,7 @@ setup(
     license='MIT',
     author='USask ARG',
     author_email='',
+    include_package_data=True,
     description='Regression analysis code for LOTUS',
     install_requires=['statsmodels', 'numpy', 'pandas', 'scipy']
 )
