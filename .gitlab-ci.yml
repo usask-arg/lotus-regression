@@ -1,6 +1,7 @@
 image: continuumio/anaconda3
 stages:
   - test
+  - deploy
 
 test_py27:
   stage: test
@@ -51,3 +52,15 @@ test_py36:
     - source activate test_env
     - python setup.py install
     - py.test
+
+deploy_docs:
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - conda env create --file docs/environment.yml > /dev/null 2>&1
+    - source activate doc_env
+    - python setup.py install
+    - cd docs
+    - make html
+    - cp -r build/html/* /media/users/djz828/regression_docs/

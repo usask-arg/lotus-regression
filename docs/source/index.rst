@@ -10,6 +10,10 @@ Welcome to LOTUS Regression's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart
+   api_reference
+
+
 
 
 Indices and tables
