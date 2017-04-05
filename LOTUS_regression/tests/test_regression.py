@@ -147,7 +147,7 @@ class TestRegression(unittest.TestCase):
         Y_error = Y + np.random.multivariate_normal(np.zeros_like(Y), covar)
 
         in_sigma = sigma
-        in_sigma[len(in_sigma)/2:] *= 4
+        in_sigma[np.floor(len(in_sigma)/2):] *= 4
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=True)
 
