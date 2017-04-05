@@ -32,7 +32,7 @@ class TestRegression(unittest.TestCase):
     def test_no_error(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         output = mzm_regression(self.X, Y, do_autocorrelation=False, do_heteroscedasticity=False)
 
@@ -43,7 +43,7 @@ class TestRegression(unittest.TestCase):
     def test_simple_error_estimates(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         # Do very small random error
         sigma = np.ones_like(Y)*0.01
@@ -57,20 +57,20 @@ class TestRegression(unittest.TestCase):
         output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
-        actual_error = np.sqrt(np.diag(pinv_x @ covar @ pinv_x.T))
+        actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         self.assertTrue(np.linalg.norm(output_error_estimate - actual_error) < 1e-3)
 
     def test_recover_ar1_structure(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         rho = -0.3
 
         sigma = np.ones_like(Y) * 0.01
 
-        covar = toeplitz(rho**np.arange(0, len(Y))) * (sigma.T @ sigma)
+        covar = toeplitz(rho**np.arange(0, len(Y))) * (sigma.T.dot(sigma))
 
         num_runs = 10
 
@@ -87,7 +87,7 @@ class TestRegression(unittest.TestCase):
     def test_wrong_weights(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         # Do very small random error
         sigma = np.ones_like(Y)*0.01
@@ -103,14 +103,14 @@ class TestRegression(unittest.TestCase):
         output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
-        actual_error = np.sqrt(np.diag(pinv_x @ covar @ pinv_x.T))
+        actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         self.assertTrue(np.linalg.norm(output_error_estimate - actual_error) > 1e-4)
 
     def test_wrong_weights_heteroscedasticity(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         # Do very small random error
         sigma = np.ones_like(Y)*0.01
@@ -126,7 +126,7 @@ class TestRegression(unittest.TestCase):
         output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
-        actual_error = np.sqrt(np.diag(pinv_x @ covar @ pinv_x.T))
+        actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
@@ -137,7 +137,7 @@ class TestRegression(unittest.TestCase):
     def test_wrong_weight_step_function(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
-        Y = self.X @ test_coeff
+        Y = self.X.dot(test_coeff)
 
         # Do very small random error
         sigma = np.ones_like(Y)*0.01
@@ -154,7 +154,7 @@ class TestRegression(unittest.TestCase):
         output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
-        actual_error = np.sqrt(np.diag(pinv_x @ covar @ pinv_x.T))
+        actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 

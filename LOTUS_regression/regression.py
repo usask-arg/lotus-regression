@@ -43,8 +43,8 @@ def corrected_ar1_covariance(sigma, gaps, rho):
             G[index, index] = g
             G[index, index-1] = -g*rho**(m+1)
 
-    covar = np.linalg.inv(G.T @ G)
-    covar *= sigma.T @ sigma
+    covar = np.linalg.inv(G.T.dot(G))
+    covar *= sigma.T.dot(sigma)
 
     return covar
 
