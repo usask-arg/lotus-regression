@@ -5,3 +5,6 @@ dependencies:
   - pandas
   - scipy
   - statsmodels
+  - pip:
+    - coveralls
+    - pytest-cov

@@ -10,7 +10,7 @@ test_py27:
     - conda env create --file ci/requirements-py27.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
-    - nosetests
+    - py.test
 
 test_py33:
   stage: test
@@ -20,7 +20,7 @@ test_py33:
     - conda env create --file ci/requirements-py33.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
-    - nosetests
+    - py.test
 
 test_py34:
   stage: test
@@ -30,7 +30,7 @@ test_py34:
     - conda env create --file ci/requirements-py34.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
-    - nosetests
+    - py.test
 
 test_py35:
   stage: test
@@ -40,7 +40,7 @@ test_py35:
     - conda env create --file ci/requirements-py35.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
-    - nosetests
+    - py.test
 
 test_py36:
   stage: test
@@ -50,4 +50,4 @@ test_py36:
     - conda env create --file ci/requirements-py36.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
-    - nosetests
+    - py.test
