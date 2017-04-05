@@ -29,6 +29,8 @@ class TestRegression(unittest.TestCase):
 
         self.X = sm.tools.tools.add_constant(X)
 
+        np.random.seed(0)
+
     def test_no_error(self):
         test_coeff = [0, 0.04, 0.02, 0, 0.08, 0.02, 0.02, -0.04, 0.01]
 
@@ -54,7 +56,7 @@ class TestRegression(unittest.TestCase):
 
         output = mzm_regression(self.X, Y_error, sigma=sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
-        output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
         actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
@@ -100,7 +102,7 @@ class TestRegression(unittest.TestCase):
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
-        output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
         actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
@@ -123,14 +125,14 @@ class TestRegression(unittest.TestCase):
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=True)
 
-        output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
         actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
-        output_error_estimate_without = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate_without = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
         self.assertTrue(np.linalg.norm(output_error_estimate - actual_error) < np.linalg.norm(output_error_estimate_without - actual_error))
 
@@ -151,11 +153,11 @@ class TestRegression(unittest.TestCase):
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=True)
 
-        output_error_estimate = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
         pinv_x = np.linalg.pinv(self.X)
         actual_error = np.sqrt(np.diag(pinv_x.dot(covar).dot(pinv_x.T)))
 
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
-        output_error_estimate_without = np.diag(np.sqrt(output['gls_results'].cov_params()))
+        output_error_estimate_without = np.sqrt(np.diag(output['gls_results'].cov_params()))
