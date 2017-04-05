@@ -6,6 +6,7 @@ dependencies:
   - scipy
   - statsmodels
   - matplotlib
+  - ipython
   - pip:
     - sphinx
     - sphinx_rtd_theme
