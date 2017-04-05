@@ -57,6 +57,9 @@ deploy_docs:
   stage: deploy
   tags:
     - docker
+  before_script:
+    - apt update
+    - apt install make
   script:
     - conda env create --file docs/environment.yml > /dev/null 2>&1
     - source activate doc_env
