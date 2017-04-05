@@ -2,12 +2,52 @@ image: continuumio/anaconda3
 stages:
   - test
 
+test_py27:
+  stage: test
+  tags:
+    - docker
+  script:
+    - conda env create --file ci/requirements-py27.yml > /dev/null 2>&1
+    - source activate test_env
+    - python setup.py install
+    - nosetests
+
+test_py33:
+  stage: test
+  tags:
+    - docker
+  script:
+    - conda env create --file ci/requirements-py33.yml > /dev/null 2>&1
+    - source activate test_env
+    - python setup.py install
+    - nosetests
+
+test_py34:
+  stage: test
+  tags:
+    - docker
+  script:
+    - conda env create --file ci/requirements-py34.yml > /dev/null 2>&1
+    - source activate test_env
+    - python setup.py install
+    - nosetests
+
+test_py35:
+  stage: test
+  tags:
+    - docker
+  script:
+    - conda env create --file ci/requirements-py35.yml > /dev/null 2>&1
+    - source activate test_env
+    - python setup.py install
+    - nosetests
+
 test_py36:
   stage: test
   tags:
     - docker
   script:
-    - conda env create --file ci/requirements-py36.yml
+    - conda env create --file ci/requirements-py36.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
     - nosetests
