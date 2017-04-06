@@ -64,4 +64,6 @@ build_deploy:
     - apt update
     - apt install make
   script:
+    - conda env create --file docs/environment.yml > /dev/null 2>&1
+    - source activate doc_env
     - sh build_deploy.sh
