@@ -60,6 +60,9 @@ build_deploy:
   stage: deploy
   tags:
     - docker
+  only:
+    - master
+    - tags
   before_script:
     - apt update
     - apt install make
