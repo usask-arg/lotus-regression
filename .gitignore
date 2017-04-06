@@ -1,0 +1,8 @@
+.cache/
+.idea/
+*__pycache__*
+*.pyc
+docs/build
+build/
+LOTUS_regression.egg-info/
+dist/

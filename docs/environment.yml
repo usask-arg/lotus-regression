@@ -1,0 +1,16 @@
+name: doc_env
+dependencies:
+  - python=3.6
+  - numpy
+  - pandas
+  - scipy
+  - statsmodels
+  - matplotlib
+  - ipython
+  - jupyter
+  - pandoc
+  - pip:
+    - sphinx
+    - sphinx_rtd_theme
+    - nbsphinx
+    - pandoc

@@ -1,0 +1,6 @@
+include versioneer.py
+include LOTUS_regression/_version.py
+include LOTUS_regression/regression.py
+
+include LOTUS_regression/tests/data/predictors.csv
+include LOTUS_regression/tests/data/S2_OSIRIS_OMPS_alt_nd_sample.csv
