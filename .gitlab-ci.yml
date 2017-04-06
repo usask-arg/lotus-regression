@@ -3,6 +3,9 @@ stages:
   - test
   - deploy
 
+variables:
+  OUTPUT_DIR: /media/users/djz828/regression/
+
 test_py27:
   stage: test
   tags:
@@ -53,7 +56,7 @@ test_py36:
     - python setup.py install
     - py.test
 
-deploy_docs:
+build_deploy:
   stage: deploy
   tags:
     - docker
@@ -61,9 +64,4 @@ deploy_docs:
     - apt update
     - apt install make
   script:
-    - conda env create --file docs/environment.yml > /dev/null 2>&1
-    - source activate doc_env
-    - python setup.py install
-    - cd docs
-    - make html
-    - cp -r build/html/* /media/users/djz828/regression_docs/
+    - sh build_deploy.sh
