@@ -95,7 +95,7 @@ def remove_nans_and_find_gaps(X, Y, sigma):
             gap_end = i
 
             gaps.append(Gap(gap_end - gap_start, i_yfix))
-        if i >= len(Y_fixed):
+        if i_yfix >= len(Y_fixed):
             break
         Y_fixed[i_yfix] = Y[i]
         i += 1
