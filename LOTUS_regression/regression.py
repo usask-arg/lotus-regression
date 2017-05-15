@@ -44,7 +44,7 @@ def corrected_ar1_covariance(sigma, gaps, rho):
             G[index, index-1] = -g*rho**(m+1)
 
     covar = np.linalg.inv(G.T.dot(G))
-    covar *= sigma.T.dot(sigma)
+    covar *= np.outer(sigma, sigma)
 
     return covar
 
@@ -228,7 +228,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
             if not do_autocorrelation:
                 # If we arent doing autocorrelation we have to reset the covariance matrix, if we are this will be done
                 # in the next step
-                covar = np.diag(sigma)
+                covar = np.diag(sigma**2)
 
         if do_autocorrelation:
             covar = corrected_ar1_covariance(sigma, gaps, rho)
