@@ -147,6 +147,16 @@ def heteroscedasticity_correction_factors(residual, seasonal_harmonics=(3, 4, 6,
             X[:, 2*idx + 2 * len(seasonal_harmonics) * idy] = np.cos(2*np.pi*month_index / harmonic) * mask
             X[:, 2*idx + 2 * len(seasonal_harmonics) * idy + 1] = np.sin(2*np.pi*month_index / harmonic) * mask
 
+    if len(unique_modes) > 1:
+        # Multiple modes, add constants to allow for varying weights between modes
+        X_constants = np.zeros((len(Y), len(unique_modes)))
+        for idy, mode in enumerate(unique_modes):
+            mask = (merged_flag == mode).astype(int)
+
+            X_constants[:, idy] = mask
+
+        X = np.hstack((X, X_constants))
+
     if extra_predictors is not None:
         X = np.hstack((X, extra_predictors))
 
