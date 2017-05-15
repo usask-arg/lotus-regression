@@ -106,6 +106,22 @@ def remove_nans_and_find_gaps(X, Y, sigma):
 
 def _heteroscedasticity_fit_values(num_resid, seasonal_harmonics=(3, 4, 6, 12), extra_predictors=None,
                                    merged_flag=None):
+    """
+
+    Parameters
+    ----------
+    num_resid : int
+        number of residuals
+    seasonal_harmonics : tuple, optional
+        Default is (3,4,6,12), these are the harmonics used to create the seasonal predictors.  sins and cosines are used
+        as predictor
+    extra_predictors : np.ndarray
+        (nsamples, x) adds extra predictors to be used in addition to the sins and cosines.
+
+    merged_flag : np.array, optional
+        Flag indicating different 'modes' of the merged dataset. For example, this flag is commonly used to describe
+        different instaument time periods in a merged dataset.
+    """
 
     month_index = np.arange(0, num_resid)
 
@@ -151,11 +167,8 @@ def heteroscedasticity_correction_factors(residual, fit_functions):
     residual : np.array
         (nsamples) residuals of the fit.  Note that these are the residuals under the transformed variables of the GLS,
         i.e., including the autocorrelation correction done.
-    seasonal_harmonics : tuple, optional
-        Default is (3,4,6,12), these are the harmonics used to create the seasonal predictors.  sins and cosines are used
-        as predictor
-    extra_predictors : np.ndarray
-        (nsamples, x) adds extra predictors to be used in addition to the sins and cosines.
+
+    fit_functions : np.ndarray
 
     Returns
     -------
@@ -164,7 +177,6 @@ def heteroscedasticity_correction_factors(residual, fit_functions):
 
     """
     Y = np.log(residual**2)
-
 
     model = sm.OLS(Y, fit_functions)
 
