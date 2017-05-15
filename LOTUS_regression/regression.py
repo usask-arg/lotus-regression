@@ -104,7 +104,8 @@ def remove_nans_and_find_gaps(X, Y, sigma):
     return X[good_data, :], Y_fixed, sigma[good_data], gaps, good_data
 
 
-def heteroscedasticity_correction_factors(residual, seasonal_harmonics=(3, 4, 6, 12), extra_predictors=None):
+def heteroscedasticity_correction_factors(residual, seasonal_harmonics=(3, 4, 6, 12), extra_predictors=None,
+                                          merged_flag=None):
     """
     Finds the heteroscedasticity correction factors outlined in Damadeo et al. 2014.  This is done by fitting
     log(residual^2) to a set of predictors. Ideally the residuals should be completely random and thus these fit values
@@ -132,11 +133,19 @@ def heteroscedasticity_correction_factors(residual, seasonal_harmonics=(3, 4, 6,
 
     month_index = np.arange(0, len(Y))
 
-    X = np.zeros((len(Y), 2*len(seasonal_harmonics)))
+    if merged_flag is None:
+        unique_modes = [0]
+        merged_flag = np.zeros_like(Y)
+    else:
+        unique_modes = np.unique(merged_flag)
 
-    for idx, harmonic in enumerate(seasonal_harmonics):
-        X[:, 2*idx] = np.cos(2*np.pi*month_index / harmonic)
-        X[:, 2*idx + 1] = np.sin(2*np.pi*month_index / harmonic)
+    X = np.zeros((len(Y), 2 * len(seasonal_harmonics) * len(unique_modes)))
+
+    for idy, mode in enumerate(unique_modes):
+        mask = (merged_flag == mode).astype(int)
+        for idx, harmonic in enumerate(seasonal_harmonics):
+            X[:, 2*idx + 2 * len(seasonal_harmonics) * idy] = np.cos(2*np.pi*month_index / harmonic) * mask
+            X[:, 2*idx + 2 * len(seasonal_harmonics) * idy + 1] = np.sin(2*np.pi*month_index / harmonic) * mask
 
     if extra_predictors is not None:
         X = np.hstack((X, extra_predictors))
@@ -150,7 +159,8 @@ def heteroscedasticity_correction_factors(residual, seasonal_harmonics=(3, 4, 6,
     return np.sqrt(np.exp(f))
 
 
-def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=True, verbose_output=False, extra_heteroscedasticity=None):
+def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=True,
+                   verbose_output=False, extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None):
     """
 
 
@@ -194,6 +204,9 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     if extra_heteroscedasticity is not None:
         extra_heteroscedasticity = extra_heteroscedasticity[good_index]
 
+    if heteroscedasticity_merged_flag is not None:
+        heteroscedasticity_merged_flag = heteroscedasticity_merged_flag[good_index]
+
     # Initial covariance matrix for the GLS with diagonal structure
     covar = np.diag(sigma**2)
 
@@ -224,7 +237,8 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
         transformed_residuals[0] = results.resid[0] * np.sqrt(1 - rho ** 2) / sigma[0]
 
         if do_heteroscedasticity:
-            sigma *= heteroscedasticity_correction_factors(transformed_residuals, extra_predictors=extra_heteroscedasticity)
+            sigma *= heteroscedasticity_correction_factors(transformed_residuals, extra_predictors=extra_heteroscedasticity,
+                                                           merged_flag=heteroscedasticity_merged_flag)
             if not do_autocorrelation:
                 # If we arent doing autocorrelation we have to reset the covariance matrix, if we are this will be done
                 # in the next step
