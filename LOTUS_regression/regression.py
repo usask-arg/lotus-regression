@@ -297,7 +297,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
             rho = 0
 
         # Find the residuals in the "transformed" GLS units.
-        transformed_residuals = results.resid @ model.cholsigmainv
+        transformed_residuals = np.dot(results.resid, model.cholsigmainv)
 
         if do_heteroscedasticity and i > 0:
             correction_factors = heteroscedasticity_correction_factors(transformed_residuals, heteroscedasticity_X,
