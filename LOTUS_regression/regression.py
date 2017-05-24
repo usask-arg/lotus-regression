@@ -36,6 +36,8 @@ def corrected_ar1_covariance(sigma, gaps, rho):
     if gaps is not None:
         for gap in gaps:
             index = gap.index
+            if index >= len(sigma):
+                break
             m = gap.length
 
             g = np.sqrt((1-rho**2) / (1-rho**(2*m+2)))
@@ -90,7 +92,7 @@ def remove_nans_and_find_gaps(X, Y, sigma):
         if np.isnan(Y[i]) or (sigma[i] == 0):
             gap_start = i
 
-            while np.isnan(Y[i]) or (sigma[i] == 0):
+            while i < len(Y) and (np.isnan(Y[i]) or (sigma[i] == 0)):
                 i += 1
             gap_end = i
 
@@ -105,7 +107,7 @@ def remove_nans_and_find_gaps(X, Y, sigma):
 
 
 def _heteroscedasticity_fit_values(num_resid, seasonal_harmonics=(3, 4, 6, 12), extra_predictors=None,
-                                   merged_flag=None):
+                                   merged_flag=None, treat_merged_periods_differently=True):
     """
 
     Parameters
@@ -131,23 +133,44 @@ def _heteroscedasticity_fit_values(num_resid, seasonal_harmonics=(3, 4, 6, 12), 
     else:
         unique_modes = np.unique(merged_flag)
 
-    X = np.zeros((num_resid, 2 * len(seasonal_harmonics) * len(unique_modes)))
-
-    for idy, mode in enumerate(unique_modes):
-        mask = (merged_flag == mode).astype(int)
-        for idx, harmonic in enumerate(seasonal_harmonics):
-            X[:, 2*idx + 2 * len(seasonal_harmonics) * idy] = np.cos(2*np.pi*month_index / harmonic) * mask
-            X[:, 2*idx + 2 * len(seasonal_harmonics) * idy + 1] = np.sin(2*np.pi*month_index / harmonic) * mask
-
-    if len(unique_modes) > 1:
-        # Multiple modes, add constants to allow for varying weights between modes
-        X_constants = np.zeros((len(Y), len(unique_modes)))
+    if treat_merged_periods_differently:
+        X = np.zeros((num_resid, 2 * len(seasonal_harmonics) * len(unique_modes)))
         for idy, mode in enumerate(unique_modes):
             mask = (merged_flag == mode).astype(int)
+            for idx, harmonic in enumerate(seasonal_harmonics):
+                X[:, 2*idx + 2 * len(seasonal_harmonics) * idy] = np.cos(2*np.pi*month_index / harmonic) * mask
+                X[:, 2*idx + 2 * len(seasonal_harmonics) * idy + 1] = np.sin(2*np.pi*month_index / harmonic) * mask
 
-            X_constants[:, idy] = mask
+        if len(unique_modes) > 1:
+            # Multiple modes, add constants to allow for varying weights between modes
+            X_constants = np.zeros((num_resid, len(unique_modes)))
+            for idy, mode in enumerate(unique_modes):
+                mask = (merged_flag == mode).astype(int)
 
-        X = np.hstack((X, X_constants))
+                X_constants[:, idy] = mask
+
+            X = np.hstack((X, X_constants))
+    else:
+        if np.max(unique_modes) == 0:
+            num_bits = 1
+        else:
+            num_bits = int(np.floor(np.log2(np.max(unique_modes)))) + 1
+        X = np.zeros((num_resid, 2 * len(seasonal_harmonics) * num_bits))
+
+        for bit in range(num_bits):
+            mask = ((merged_flag.astype(int) & 2**bit) > 0).astype(int)
+            for idx, harmonic in enumerate(seasonal_harmonics):
+                X[:, 2*idx + 2 * len(seasonal_harmonics) * bit] = np.cos(2*np.pi*month_index / harmonic) * mask
+                X[:, 2*idx + 2 * len(seasonal_harmonics) * bit + 1] = np.sin(2*np.pi*month_index / harmonic) * mask
+
+        if len(unique_modes) > 1:
+            # Multiple modes, add constants to allow for varying weights between modes
+            X_constants = np.zeros((num_resid, num_bits))
+            for bit in range(num_bits):
+                mask = ((merged_flag.astype(int) & 2 ** bit) > 0).astype(int)
+
+                X_constants[:, bit] = mask
+            X = np.hstack((X, X_constants))
 
     if extra_predictors is not None:
         X = np.hstack((X, extra_predictors))
@@ -155,7 +178,7 @@ def _heteroscedasticity_fit_values(num_resid, seasonal_harmonics=(3, 4, 6, 12), 
     return X
 
 
-def heteroscedasticity_correction_factors(residual, fit_functions):
+def heteroscedasticity_correction_factors(residual, fit_functions, log_space=False, damping=0.5):
     """
     Finds the heteroscedasticity correction factors outlined in Damadeo et al. 2014.  This is done by fitting
     log(residual^2) to a set of predictors. Ideally the residuals should be completely random and thus these fit values
@@ -176,19 +199,29 @@ def heteroscedasticity_correction_factors(residual, fit_functions):
     matrix.
 
     """
-    Y = np.log(residual**2)
-
+    Y = residual**2
+    if log_space:
+        Y = np.log(Y)
     model = sm.OLS(Y, fit_functions)
 
     results = model.fit()
 
     f = results.fittedvalues
+    if log_space:
+        f = np.exp(f)
 
-    return np.sqrt(np.exp(f))
+    correction_factors = (np.sqrt(np.abs(f)) - 1)*damping + 1
+
+    # Sometimes we can get values really close to 0, so dont let the weights change by more than 2 orders of magnitude
+    correction_factors[correction_factors <= 1e-2] = 1e-2
+    correction_factors[correction_factors >= 1e2] = 1e2
+
+    return correction_factors
 
 
 def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=True,
-                   verbose_output=False, extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None):
+                   verbose_output=False, extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None,
+                   treat_merged_periods_differently=True, seasonal_harmonics=(3, 4, 6, 12)):
     """
 
 
@@ -232,11 +265,13 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     if extra_heteroscedasticity is not None:
         extra_heteroscedasticity = extra_heteroscedasticity[good_index]
 
-    if do_heteroscedasticity:
-        heteroscedasticity_X = _heteroscedasticity_fit_values(len(Y), extra_predictors=extra_heteroscedasticity, merged_flag=heteroscedasticity_merged_flag)
-
     if heteroscedasticity_merged_flag is not None:
         heteroscedasticity_merged_flag = heteroscedasticity_merged_flag[good_index]
+
+    if do_heteroscedasticity:
+        heteroscedasticity_X = _heteroscedasticity_fit_values(len(Y), extra_predictors=extra_heteroscedasticity, merged_flag=heteroscedasticity_merged_flag,
+                                                              treat_merged_periods_differently=treat_merged_periods_differently,
+                                                              seasonal_harmonics=seasonal_harmonics)
 
     # Initial covariance matrix for the GLS with diagonal structure
     covar = np.diag(sigma**2)
@@ -262,13 +297,12 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
             rho = 0
 
         # Find the residuals in the "transformed" GLS units.
-        transformed_residuals = np.zeros_like(results.resid)
-        transformed_residuals[1:] = (results.resid[1:] - rho * results.resid[:-1]) / sigma[1:]
+        transformed_residuals = results.resid @ model.cholsigmainv
 
-        transformed_residuals[0] = results.resid[0] * np.sqrt(1 - rho ** 2) / sigma[0]
-
-        if do_heteroscedasticity:
-            sigma *= heteroscedasticity_correction_factors(transformed_residuals, heteroscedasticity_X)
+        if do_heteroscedasticity and i > 0:
+            correction_factors = heteroscedasticity_correction_factors(transformed_residuals, heteroscedasticity_X,
+                                                                       log_space=True)
+            sigma *= correction_factors
             if not do_autocorrelation:
                 # If we arent doing autocorrelation we have to reset the covariance matrix, if we are this will be done
                 # in the next step
@@ -281,11 +315,16 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
             # There is nothing here to iterate,
             break
         # If converged we can stop
-        if np.abs((rho - rho_prior)) < tolerance:
-            break
+        if np.abs((rho - rho_prior)) < tolerance and i > 0:
+            if not do_heteroscedasticity:
+                break
+            else:
+                if np.linalg.norm(correction_factors - 1) < tolerance:
+                    break
         else:
             rho_prior = rho
 
+    print(i)
     residuals[good_index] = results.resid
     fit_values[good_index] = results.fittedvalues
 
