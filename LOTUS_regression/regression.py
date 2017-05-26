@@ -348,7 +348,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     return output
 
 
-def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
+def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, **kwargs):
     mzm_data = mzm_data.rename({time_field, 'time'})
 
     mzm_data = mzm_data.reindex(time=pd.date_range(mzm_data.time.values[0], mzm_data.time.values[-1], freq=pd.DateOffset(months=1)),
@@ -357,6 +357,11 @@ def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
     min_time = mzm_data.time.values[0]
     max_time = mzm_data.time.values[-1]
 
+    min_time = pd.to_datetime(min_time)
+
+    if min_time.day != 1:
+        min_time -= pd.DateOffset(months=1)
+
     predictors = predictors[(predictors.index >= min_time) & (predictors.index <= max_time)]
     pred_list = list(predictors.columns.values)
 
@@ -364,7 +369,7 @@ def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
     X = predictors.values
 
     coords = []
-    for c in mzm_data.coords:
+    for c in mzm_data.coords.dims:
         if c != 'time':
             coords.append(c)
 
@@ -384,7 +389,7 @@ def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
         for id_y, y in enumerate(mzm_data[coords[1]].values):
 
             sliced_data = mzm_data.loc[{coords[0]: x, coords[1]: y}]
-            Y = sliced_data.values[1:]
+            Y = sliced_data.values
             try:
                 output = mzm_regression(X, Y, **kwargs)
                 std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
@@ -394,6 +399,7 @@ def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
                     ret[col + '_std'][id_x, id_y] = std_error[idx]
 
             except Exception as e:
-                pass
+                if debug:
+                    print(e)
 
     return ret

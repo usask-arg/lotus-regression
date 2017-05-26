@@ -56,12 +56,18 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
     x_diff = data[x].values[1] - data[x].values[0]
 
     xs = np.hstack((data[x].values, (data[x].values[-1] + x_diff))) - x_diff / 2
-    if contour:
-        C = plt.pcolor(xs, data[y].values, data[name].values.T, cmap='RdBu_r', alpha=0)
 
-        im = plt.contourf(data[x].values, data[y].values, data[name].values.T, cmap='RdBu_r', levels=levels)
+    if len(data[y].values) == np.shape(data[name].values)[1]:
+        vals = data[name].values.T
     else:
-        C = plt.pcolor(xs, data[y].values, data[name].values.T, cmap='RdBu_r')
+        vals = data[name].values
+
+    if contour:
+        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r', alpha=0)
+
+        im = plt.contourf(data[x].values, data[y].values, vals, cmap='RdBu_r', levels=levels)
+    else:
+        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r')
         im = C
 
 
