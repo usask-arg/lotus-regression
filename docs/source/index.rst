@@ -10,7 +10,9 @@ Welcome to LOTUS Regression's documentation!
    :maxdepth: 2
    :glob:
 
-   examples/Quickstart
+   examples/SingleBin
+   examples/GOZCARDS Trends
+   examples/Sage II-OSIRIS-OMPS-LP Trends
    api_reference
 
 

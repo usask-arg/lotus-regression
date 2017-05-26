@@ -8,3 +8,5 @@ include LOTUS_regression/tests/data/S2_OSIRIS_OMPS_alt_nd_sample.csv
 include LOTUS_regression/predictors/seasonal.py
 include LOTUS_regression/predictors/data/predictors.csv
 include LOTUS_regression/predictors/download/*
+
+include LOTUS_regression/plotting/*
