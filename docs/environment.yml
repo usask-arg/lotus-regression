@@ -9,6 +9,7 @@ dependencies:
   - ipython
   - jupyter
   - pandoc
+  - netcdf4
   - pip:
     - sphinx
     - sphinx_rtd_theme
