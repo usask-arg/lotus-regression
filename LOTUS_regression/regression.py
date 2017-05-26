@@ -323,8 +323,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
                     break
         else:
             rho_prior = rho
-
-    print(i)
+            
     residuals[good_index] = results.resid
     fit_values[good_index] = results.fittedvalues
 
