@@ -10,6 +10,7 @@ dependencies:
   - jupyter
   - pandoc
   - netcdf4
+  - hdf5
   - pip:
     - sphinx
     - sphinx_rtd_theme
