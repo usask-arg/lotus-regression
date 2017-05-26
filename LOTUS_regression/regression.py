@@ -1,6 +1,9 @@
 import statsmodels.api as sm
 import numpy as np
 from collections import namedtuple
+import xarray as xr
+import pandas as pd
+from copy import copy
 
 
 def corrected_ar1_covariance(sigma, gaps, rho):
@@ -323,7 +326,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
                     break
         else:
             rho_prior = rho
-            
+
     residuals[good_index] = results.resid
     fit_values[good_index] = results.fittedvalues
 
@@ -343,3 +346,55 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     output['covariance'] = covar
 
     return output
+
+
+def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
+    mzm_data = mzm_data.rename({time_field, 'time'})
+
+    mzm_data = mzm_data.reindex(time=pd.date_range(mzm_data.time.values[0], mzm_data.time.values[-1], freq=pd.DateOffset(months=1)),
+                                tolerance=pd.Timedelta(days=1), method='nearest')
+
+    min_time = mzm_data.time.values[0]
+    max_time = mzm_data.time.values[-1]
+
+    predictors = predictors[(predictors.index >= min_time) & (predictors.index <= max_time)]
+    predictors['constant'] = np.ones_like(predictors['qboA'].values)
+    pred_list = list(predictors.columns.values)
+
+    # (nsamples, npredictors) matrix
+    X = predictors.values
+
+    coords = []
+    for c in mzm_data.coords:
+        if c != 'time':
+            coords.append(c)
+
+    assert(len(coords) <= 2)
+
+    c_list = {c: mzm_data[c].values for c in coords}
+
+    ret = xr.Dataset(coords=c_list)
+
+    sized_nans = np.ones([len(mzm_data[c].values) for c in coords]) * np.nan
+
+    for pred in pred_list:
+        ret[pred] = (coords, copy(sized_nans))
+        ret[pred + "_std"] = (coords, copy(sized_nans))
+
+    for id_x, x in enumerate(mzm_data[coords[0]].values):
+        for id_y, y in enumerate(mzm_data[coords[1]].values):
+
+            sliced_data = mzm_data.loc[{coords[0]: x, coords[1]: y}]
+            Y = sliced_data.values[1:]
+            try:
+                output = mzm_regression(X, Y, **kwargs)
+                std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
+
+                for idx, col in enumerate(pred_list):
+                    ret[col][id_x, id_y] = output['gls_results'].params[idx]
+                    ret[col + '_std'][id_x, id_y] = std_error[idx]
+
+            except Exception as e:
+                pass
+
+    return ret
