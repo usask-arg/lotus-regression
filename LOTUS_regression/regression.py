@@ -222,7 +222,7 @@ def heteroscedasticity_correction_factors(residual, fit_functions, log_space=Fal
     return correction_factors
 
 
-def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=True,
+def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=False,
                    verbose_output=False, extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None,
                    treat_merged_periods_differently=True, seasonal_harmonics=(3, 4, 6, 12)):
     """
@@ -358,7 +358,6 @@ def regress_all_bins(predictors, mzm_data, time_field='time', **kwargs):
     max_time = mzm_data.time.values[-1]
 
     predictors = predictors[(predictors.index >= min_time) & (predictors.index <= max_time)]
-    predictors['constant'] = np.ones_like(predictors['qboA'].values)
     pred_list = list(predictors.columns.values)
 
     # (nsamples, npredictors) matrix
