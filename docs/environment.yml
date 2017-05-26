@@ -11,6 +11,7 @@ dependencies:
   - pandoc
   - netcdf4
   - hdf5
+  - hdf4
   - pip:
     - sphinx
     - sphinx_rtd_theme
