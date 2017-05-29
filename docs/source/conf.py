@@ -41,6 +41,7 @@ extensions = ['sphinx.ext.autodoc',
     'IPython.sphinxext.ipython_console_highlighting']
 
 nbsphinx_timeout = 600
+nbsphinx_allow_errors = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
