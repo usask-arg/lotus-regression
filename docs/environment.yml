@@ -13,8 +13,11 @@ dependencies:
   - hdf5
   - hdf4
   - dask
+  - scikit-learn
+  - requests
   - pip:
     - sphinx
     - sphinx_rtd_theme
     - nbsphinx
     - pandoc
+    - appdirs
