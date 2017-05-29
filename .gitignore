@@ -6,3 +6,7 @@ docs/build
 build/
 LOTUS_regression.egg-info/
 dist/
+*.html
+*.md
+*.ipynb_checkpoints*
+examples/*

@@ -6,7 +6,7 @@ import pandas as pd
 from copy import copy
 
 
-def corrected_ar1_covariance(sigma, gaps, rho):
+def _corrected_ar1_covariance(sigma, gaps, rho):
     """
     Calculates the corrected covariance matrix accounting for AR1 structure, this is the Prais and Winsten covariance
     structure with a modification by Savin and White (1978) to account for gaps in the data.
@@ -54,7 +54,7 @@ def corrected_ar1_covariance(sigma, gaps, rho):
     return covar
 
 
-def remove_nans_and_find_gaps(X, Y, sigma):
+def _remove_nans_and_find_gaps(X, Y, sigma):
     """
     Preprocesses the data by removing NaN's and in the process finds gaps in the data.
 
@@ -181,7 +181,7 @@ def _heteroscedasticity_fit_values(num_resid, seasonal_harmonics=(3, 4, 6, 12), 
     return X
 
 
-def heteroscedasticity_correction_factors(residual, fit_functions, log_space=False, damping=0.5):
+def _heteroscedasticity_correction_factors(residual, fit_functions, log_space=False, damping=0.5):
     """
     Finds the heteroscedasticity correction factors outlined in Damadeo et al. 2014.  This is done by fitting
     log(residual^2) to a set of predictors. Ideally the residuals should be completely random and thus these fit values
@@ -222,11 +222,11 @@ def heteroscedasticity_correction_factors(residual, fit_functions, log_space=Fal
     return correction_factors
 
 
-def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=False,
-                   verbose_output=False, extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None,
-                   treat_merged_periods_differently=True, seasonal_harmonics=(3, 4, 6, 12)):
+def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=False,
+                   extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None,
+                   seasonal_harmonics=(3, 4, 6, 12)):
     """
-
+    Performs the regression for a single bin.
 
     Parameters
     ----------
@@ -237,19 +237,39 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     sigma : np.array
         (nsamples) Square root of the diagonal elements of the covariance matrix for Y
     tolerance : float, optional
-        Iterations stop when the relative difference in the AR1 coefficient is less than this threshold.  Default 1e-5
+        Iterations stop when the relative difference in the AR1 coefficient is less than this threshold.  Default 1e-2
     max_iter : int, optional
         Maximum number of iterations to perform.  Default 50
     do_autocorrelation : bool, optional
         If true, do the AR1 autocorrelation correction on the covariance matrix.  Default True.
     do_heteroscedasticity : bool, optional
-        If True, do the heteroscedasticity correction on the covariance matrix.  Default True.
-    verbose_output :
-    extra_heteroscedasticity : np.ndarray
+        If True, do the heteroscedasticity correction on the covariance matrix.  Default False.
+    extra_heteroscedasticity : np.ndarray, optional
         (nsamples, nextrapredictors) Extra predictor functions to use in the heteroscedasticity correction.
+    heteroscedasticity_merged_flag : np.ndarray, optional
+        (nsamples) A flag indicating time periods that should be treated independently in the heteroscedasticity
+        correction.  E.g. this could be something like [0, 0, 0, 0, 2, 2, 2, 1, 1, 1] which would create 3
+        independant time periods where the heteroscedasticity correction is applied.
+    seasonal_harmonics : Iterable Float, optional.  Default (3, 4, 6, 12)
+        The monthly harmonics to use in the heteroscedasticity correction.
 
     Returns
     -------
+    results : dict
+        a dictionary of outputs with keys:
+        ``gls_results``
+            The raw regression output.  This is an instance of `RegressionResults` which is documented at
+            http://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.RegressionResults.html
+        ``residual``
+            Residuals of the fit in the original coordinate system.
+        ``transformed_residuals``
+            Residuals of the fit in the GLS transformed coordinates.
+        ``autocorrelation``
+            The AR1 correlation constant.
+        ``numiter``
+            Number of iterative steps performed.
+        ``covariance``
+            Calculated covariance of Y that is input to the GLS model.
 
     """
     # If we have no weights then still do a weighted regression but use sigma=1
@@ -264,7 +284,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     sigma_out = np.ones_like(Y)*np.nan
 
     # Do some preprocessing
-    X, Y, sigma, gaps, good_index = remove_nans_and_find_gaps(X, Y, sigma)
+    X, Y, sigma, gaps, good_index = _remove_nans_and_find_gaps(X, Y, sigma)
     if extra_heteroscedasticity is not None:
         extra_heteroscedasticity = extra_heteroscedasticity[good_index]
 
@@ -273,7 +293,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
 
     if do_heteroscedasticity:
         heteroscedasticity_X = _heteroscedasticity_fit_values(len(Y), extra_predictors=extra_heteroscedasticity, merged_flag=heteroscedasticity_merged_flag,
-                                                              treat_merged_periods_differently=treat_merged_periods_differently,
+                                                              treat_merged_periods_differently=True,
                                                               seasonal_harmonics=seasonal_harmonics)
 
     # Initial covariance matrix for the GLS with diagonal structure
@@ -303,8 +323,8 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
         transformed_residuals = np.dot(results.resid, model.cholsigmainv)
 
         if do_heteroscedasticity and i > 0:
-            correction_factors = heteroscedasticity_correction_factors(transformed_residuals, heteroscedasticity_X,
-                                                                       log_space=True)
+            correction_factors = _heteroscedasticity_correction_factors(transformed_residuals, heteroscedasticity_X,
+                                                                        log_space=True)
             sigma *= correction_factors
             if not do_autocorrelation:
                 # If we arent doing autocorrelation we have to reset the covariance matrix, if we are this will be done
@@ -312,7 +332,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
                 covar = np.diag(sigma**2)
 
         if do_autocorrelation:
-            covar = corrected_ar1_covariance(sigma, gaps, rho)
+            covar = _corrected_ar1_covariance(sigma, gaps, rho)
 
         if not do_autocorrelation and not do_heteroscedasticity:
             # There is nothing here to iterate,
@@ -348,7 +368,34 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-5, max_iter=50, do_autocorrela
     return output
 
 
-def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, **kwargs):
+def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, **kwargs):
+    """
+    Performs the regression for a dataset in all bins.
+
+    Parameters
+    ----------
+    predictors : pd.Dataframe
+        Dataframe of predictors to use in the regression.  Index should be a time field.
+
+    mzm_data : xr.DataArray
+        DataArray containing the monthly zonal mean data in a variety of bins.  The data should be three dimensional
+        with one dimension representing time.  The other two dimensions are typically latitude and a vertical coordinate.
+
+    time_field : string
+        Name of the time field in the mzm_data structure
+
+    sigma : xr.DataArray, optional.  Default None
+        If not None then the regression is weighted as if sigma is the standard deviation of mzm_data.  Should be in the
+        same format as mzm_data.
+
+    kwargs
+        Other arguments passed to mzm_regression
+
+    Returns
+    -------
+    xr.Dataset
+
+    """
     mzm_data = mzm_data.rename({time_field, 'time'})
 
     mzm_data = mzm_data.reindex(time=pd.date_range(mzm_data.time.values[0], mzm_data.time.values[-1], freq=pd.DateOffset(months=1)),
@@ -390,8 +437,14 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, **kwa
 
             sliced_data = mzm_data.loc[{coords[0]: x, coords[1]: y}]
             Y = sliced_data.values
+
+            if sigma is not None:
+                sigma_bin = sigma.loc[{coords[0]: x, coords[1]: y}].values
+            else:
+                sigma_bin = None
+
             try:
-                output = mzm_regression(X, Y, **kwargs)
+                output = mzm_regression(X, Y, sigma=sigma_bin, **kwargs)
                 std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
                 for idx, col in enumerate(pred_list):

@@ -5,3 +5,4 @@ API Reference
 
 .. toctree::
     api_regression
+    api_predictors
