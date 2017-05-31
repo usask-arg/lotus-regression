@@ -13,10 +13,13 @@ Requirements
 ^^^^^^^^^^^^
 The code is tested on Python versions `2.7, 3.3, 3.4, 3.5, 3.6` and should work on any of them,
 however we recommend using the `Anaconda python distribution <https://www.continuum.io/downloads>`_ which by default comes with Python
-version `3.6`.
+version `3.6`.  Some of the example code may also be incompatible with Python `2.7`
 
 A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs`
-which will automatically be installed upon installing the package.
+which should be automatically be installed upon installing the package, if you are using anaconda you can verify/install
+that these packages are available by running
+
+   conda install numpy scipy pandas xarray statsmodels requests appdirs
 
 How To Install
 ^^^^^^^^^^^^^^
@@ -30,7 +33,7 @@ Examples
 Some of the examples may require additional packages for loading and handling of data, to obtain all of the packages
 necessary to run the examples you may run::
 
-   conda install matplotlib netcdf4 dask hdf5 hdf4 scikit-learn
+   conda install matplotlib netcdf4 dask hdf5 hdf4
 
 .. toctree::
    :maxdepth: 2
