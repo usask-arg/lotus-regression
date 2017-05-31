@@ -12,5 +12,5 @@ setup(
     author_email='',
     include_package_data=True,
     description='Regression analysis code for LOTUS',
-    install_requires=['statsmodels', 'numpy', 'pandas', 'scipy', 'xarray', 'requests', 'appdirs']
+    install_requires=['numpy', 'scipy', 'pandas', 'xarray', 'statsmodels', 'requests', 'appdirs']
 )
