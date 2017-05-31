@@ -17,7 +17,7 @@ version `3.6`.  Some of the example code may also be incompatible with Python `2
 
 A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs`
 which should be automatically be installed upon installing the package, if you are using anaconda you can verify/install
-that these packages are available by running
+that these packages are available by running::
 
    conda install numpy scipy pandas xarray statsmodels requests appdirs
 
