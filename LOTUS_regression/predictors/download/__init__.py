@@ -35,13 +35,13 @@ def load_enso():
     return data
 
 
-def load_linear(inflection=1979):
+def load_linear(inflection=1997):
     """
     Returns two piecewise linear components with a given inflection point in value / decade.
 
     Parameters
     ----------
-    inflection : int, Optional. Default 1979
+    inflection : int, Optional. Default 1997
     """
     num_months = 12 * (pd.datetime.now().year - 1979) + pd.datetime.now().month
     index = pd.date_range('1980-01', periods=num_months, freq='M').to_period(freq='M')
