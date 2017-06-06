@@ -151,3 +151,25 @@ def load_trop(deseasonalize=True):
         anom = trop_only
 
     return anom.to_dataframe('pres').pres.to_period(freq='M')
+
+
+def load_ao():
+    data = pd.read_table('http://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/monthly.ao.index.b50.current.ascii',
+                         delim_whitespace=True,
+                         header=None,
+                         names=['year', 'month', 'ao'])
+
+    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
+
+    return data.set_index(keys='dt')['ao']
+
+
+def load_aao():
+    data = pd.read_table('http://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/aao/monthly.aao.index.b79.current.ascii',
+                         delim_whitespace=True,
+                         header=None,
+                         names=['year', 'month', 'aao'])
+
+    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
+
+    return data.set_index(keys='dt')['aao']
