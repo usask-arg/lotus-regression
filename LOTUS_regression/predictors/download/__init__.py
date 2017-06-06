@@ -173,3 +173,27 @@ def load_aao():
     data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
 
     return data.set_index(keys='dt')['aao']
+
+
+def load_nao():
+    data = pd.read_table(
+        'http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii',
+        delim_whitespace=True,
+        header=None,
+        names=['year', 'month', 'nao'])
+
+    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(
+        freq='M')
+
+    return data.set_index(keys='dt')['nao']
+
+
+def load_ehf(filename):
+    data = pd.read_table(filename, delim_whitespace=True, header=None, skiprows=4, names=['year', 'month', 'sh_ehf', 'nh_ehf'])
+
+    data['dt'] = data.apply(lambda row: pd.datetime(int(np.floor(row.year)), int(row.month), 1), axis=1).dt.to_period(
+        freq='M')
+
+    data = data.drop(['year', 'month'], axis=1)
+
+    return data.set_index(keys='dt')
