@@ -15,6 +15,7 @@ dependencies:
   - dask
   - scikit-learn
   - requests
+  - jpeg=8d
   - pip:
     - sphinx
     - sphinx_rtd_theme

@@ -33,7 +33,7 @@ Examples
 Some of the examples may require additional packages for loading and handling of data, to obtain all of the packages
 necessary to run the examples you may run::
 
-   conda install matplotlib netcdf4 dask hdf5 hdf4
+   conda install matplotlib netcdf4 dask hdf5 hdf4 jpeg=8d
 
 .. toctree::
    :maxdepth: 2
