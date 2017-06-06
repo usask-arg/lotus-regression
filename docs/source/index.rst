@@ -41,6 +41,7 @@ necessary to run the examples you may run::
 
    examples/GOZCARDS Trends
    examples/Sage II-OSIRIS-OMPS-LP Trends
+   examples/SBUV Trends
    examples/Predictors
    examples/SingleBin
 
