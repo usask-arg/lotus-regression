@@ -4,7 +4,10 @@ import numpy as np
 from scipy.linalg import toeplitz
 import statsmodels as sm
 import os
-from LOTUS_regression.regression import mzm_regression
+from LOTUS_regression.regression import mzm_regression, regress_all_bins
+import xarray as xr
+from LOTUS_regression.predictors.seasonal import add_seasonal_components
+from LOTUS_regression.predictors import load_data
 
 
 class TestRegression(unittest.TestCase):
@@ -161,3 +164,22 @@ class TestRegression(unittest.TestCase):
         output = mzm_regression(self.X, Y_error, sigma=in_sigma, do_autocorrelation=False, do_heteroscedasticity=False)
 
         output_error_estimate_without = np.sqrt(np.diag(output['gls_results'].cov_params()))
+
+    def test_gozcards(self):
+        GOZCARDS_FILES = r'/media/users/data/LOTUS/GOZCARDS/*.nc4'
+
+        data = xr.decode_cf(xr.open_mfdataset(GOZCARDS_FILES, concat_dim='time', group='Merged'))
+
+        data = data.loc[dict(lat=slice(-60, 60))]
+
+        predictors = load_data('predictors.csv')
+        # predictors = predictors.drop(['qboA', 'qboB', 'qboC', 'trop', 'enso', 'solar'], axis=1)
+        predictors = predictors.drop(['qboC', 'trop'], axis=1)
+        predictors['constant'] = np.ones(len(predictors.index))
+
+        predictors = add_seasonal_components(predictors,
+                                             {'constant': 4, 'linear_pre': 2, 'linear_post': 2, 'qboA': 2,
+                                              'qboB': 2})
+
+        results = regress_all_bins(predictors, data['average'], do_heteroscedasticity=False, tolerance=0.01,
+                                   do_autocorrelation=True)

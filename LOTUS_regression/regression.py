@@ -409,7 +409,12 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
     if min_time.day != 1:
         min_time -= pd.DateOffset(months=1)
 
-    predictors = predictors[(predictors.index.to_timestamp() >= min_time) & (predictors.index.to_timestamp() <= max_time)]
+    if isinstance(predictors.index, pd.DatetimeIndex):
+        tstamp = predictors.index.to_datetime()
+    else:
+        tstamp = predictors.index.to_timestamp()
+
+    predictors = predictors[(tstamp >= min_time) & (tstamp <= max_time)]
     pred_list = list(predictors.columns.values)
 
     # (nsamples, npredictors) matrix
