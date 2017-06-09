@@ -166,7 +166,7 @@ class TestRegression(unittest.TestCase):
         output_error_estimate_without = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
     def test_gozcards(self):
-        GOZCARDS_FILES = r'/media/users/data/GOZCARDS/*.nc4'
+        GOZCARDS_FILES = r'/media/users/data/LOTUS/GOZCARDS/*.nc4'
 
         data = xr.decode_cf(xr.open_mfdataset(GOZCARDS_FILES, concat_dim='time', group='Merged'))
 
