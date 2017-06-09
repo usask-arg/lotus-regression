@@ -16,16 +16,6 @@ test_py27:
     - python setup.py install
     - py.test
 
-test_py33:
-  stage: test
-  tags:
-    - docker
-  script:
-    - conda env create --file ci/requirements-py33.yml > /dev/null 2>&1
-    - source activate test_env
-    - python setup.py install
-    - py.test
-
 test_py34:
   stage: test
   tags:
