@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def add_seasonal_components(basis_df, num_components: dict):
+def add_seasonal_components(basis_df, num_components):
     for column in basis_df:
         n_harmonic = num_components.get(column, 0)
 
