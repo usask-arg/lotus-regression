@@ -208,8 +208,8 @@ def load_giss_aod():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # Only fetch from the ftp if the file does not exist or is greater than one week out of date.
-    if not os.path.exists(save_path) or time.time() - os.path.getmtime(save_path) > 60*60*24*7:
+    # Only fetch from the ftp if the file does not exist
+    if not os.path.exists(save_path) or time.time():
         r = requests.get(r'https://data.giss.nasa.gov/modelforce/strataer/tau_map_2012-12.nc')
 
         with open(save_path, 'wb') as f:
