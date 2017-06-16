@@ -197,3 +197,28 @@ def load_ehf(filename):
     data = data.drop(['year', 'month'], axis=1)
 
     return data.set_index(keys='dt')
+
+
+def load_giss_aod():
+
+    filename = 'tau_map_2012-12.nc'
+
+    save_path = os.path.join(appdirs.user_data_dir(), filename)
+    directory = os.path.dirname(save_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Only fetch from the ftp if the file does not exist or is greater than one week out of date.
+    if not os.path.exists(save_path) or time.time() - os.path.getmtime(save_path) > 60*60*24*7:
+        r = requests.get(r'https://data.giss.nasa.gov/modelforce/strataer/tau_map_2012-12.nc')
+
+        with open(save_path, 'wb') as f:
+            f.write(r.content)
+
+    data = xr.open_dataset(save_path)
+
+    data = data.mean(dim='lat')['tau'].to_dataframe()
+
+    data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1))
+    data.index.names = ['time']
+    return data
