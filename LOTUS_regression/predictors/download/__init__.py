@@ -221,4 +221,4 @@ def load_giss_aod():
 
     data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1))
     data.index.names = ['time']
-    return data
+    return data['tau']
