@@ -197,3 +197,16 @@ def load_ehf(filename):
     data = data.drop(['year', 'month'], axis=1)
 
     return data.set_index(keys='dt')
+
+
+def load_solar_mg2():
+    data = pd.read_table(
+        'http://www.iup.uni-bremen.de/gome/solar/MgII_composite.dat',
+        delim_whitespace=True,
+        header=22,
+        names=['year', 'month', 'day', 'index', 'error', 'id'],
+        parse_dates={'time': [0, 1, 2]},
+        index_col='time'
+        )
+
+    return data.resample('1M').mean().to_period(freq='M')['index']
