@@ -219,6 +219,6 @@ def load_giss_aod():
 
     data = data.mean(dim='lat')['tau'].to_dataframe()
 
-    data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1))
+    data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1)).to_period(freq='M')
     data.index.names = ['time']
     return data['tau']
