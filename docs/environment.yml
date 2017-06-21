@@ -3,7 +3,7 @@ dependencies:
   - python=3.6
   - numpy
   - pandas
-  - scipy
+  - scipy=0.18
   - statsmodels
   - matplotlib
   - ipython
