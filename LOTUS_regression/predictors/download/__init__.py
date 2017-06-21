@@ -154,6 +154,9 @@ def load_trop(deseasonalize=True):
 
 
 def load_ao():
+    """
+    Loads the arctic oscillation index from ncep
+    """
     data = pd.read_table('http://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/monthly.ao.index.b50.current.ascii',
                          delim_whitespace=True,
                          header=None,
@@ -176,6 +179,10 @@ def load_aao():
 
 
 def load_nao():
+    """
+    Loads the north atlantic oscillation index from noaa
+    :return:
+    """
     data = pd.read_table(
         'http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii',
         delim_whitespace=True,
@@ -189,6 +196,10 @@ def load_nao():
 
 
 def load_ehf(filename):
+    """
+    Loads the eddy heat flux data from the file erai_ehf_monthly_1978_2016.txt provided on the LOTUS ftp server in
+    the folder Proxies-Weber
+    """
     data = pd.read_table(filename, delim_whitespace=True, header=None, skiprows=4, names=['year', 'month', 'sh_ehf', 'nh_ehf'])
 
     data['dt'] = data.apply(lambda row: pd.datetime(int(np.floor(row.year)), int(row.month), 1), axis=1).dt.to_period(
@@ -199,7 +210,37 @@ def load_ehf(filename):
     return data.set_index(keys='dt')
 
 
+def load_giss_aod():
+    """
+    Loads the giss aod index from giss
+    """
+    filename = 'tau_map_2012-12.nc'
+
+    save_path = os.path.join(appdirs.user_data_dir(), filename)
+    directory = os.path.dirname(save_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Only fetch from the ftp if the file does not exist
+    if not os.path.exists(save_path) or time.time():
+        r = requests.get(r'https://data.giss.nasa.gov/modelforce/strataer/tau_map_2012-12.nc')
+
+        with open(save_path, 'wb') as f:
+            f.write(r.content)
+
+    data = xr.open_dataset(save_path)
+
+    data = data.mean(dim='lat')['tau'].to_dataframe()
+
+    data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1)).to_period(freq='M')
+    data.index.names = ['time']
+    return data['tau']
+
+
 def load_solar_mg2():
+    """
+    Loads the bremen solar composite mg2 index
+    """
     data = pd.read_table(
         'http://www.iup.uni-bremen.de/gome/solar/MgII_composite.dat',
         delim_whitespace=True,
@@ -210,3 +251,39 @@ def load_solar_mg2():
         )
 
     return data.resample('1M').mean().to_period(freq='M')['index']
+
+
+def load_orthogonal_eesc(filename):
+    """
+    Calculates two orthogonal eesc terms from the predicted eesc at 6 different ages of air, uses the EESC.txt
+    datafile from the LOTUS ftp server in the folder EESC_Damadeo
+    """
+    data = pd.read_table(filename, delim_whitespace=True, header=3)
+
+    import sklearn.decomposition as decomp
+
+    pca = decomp.PCA(n_components=2)
+    data['eesc_1'], data['eesc_2'] = pca.fit_transform(data.values).T
+
+    def frac_year_to_datetime(start):
+        from datetime import datetime, timedelta
+
+        year = int(start)
+        rem = start - year
+
+        base = datetime(year, 1, 1)
+        result = base + timedelta(seconds=(base.replace(year=base.year + 1) - base).total_seconds() * rem)
+
+        return result
+
+    data.index = data.index.map(frac_year_to_datetime)
+
+    data = data.resample('MS').interpolate('linear')
+
+    data.index = data.index.to_period(freq='M')
+
+    data = data.drop(['1.0', '2.0', '3.0', '4.0', '5.0', '6.0'], axis=1)
+
+    data /= data.std()
+
+    return data
