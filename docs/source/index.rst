@@ -44,6 +44,7 @@ necessary to run the examples you may run::
    examples/SBUV Trends
    examples/Predictors
    examples/SingleBin
+   examples/Changing the Linear Components
 
 
 API Reference

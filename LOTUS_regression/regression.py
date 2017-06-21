@@ -368,7 +368,7 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
     return output
 
 
-def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, **kwargs):
+def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, post_fit_trend_start=None, **kwargs):
     """
     Performs the regression for a dataset in all bins.
 
@@ -388,6 +388,11 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
         If not None then the regression is weighted as if sigma is the standard deviation of mzm_data.  Should be in the
         same format as mzm_data.
 
+    post_fit_trend_start : datetimelike, optional. Default None
+        If set to a datetime like object (example: '2000-01-01') then a linear trend is post fit to the residuals with
+        the specified start date.  If this is set you should not include a linear term in the predictors or the
+        results will not be valid
+
     kwargs
         Other arguments passed to mzm_regression
 
@@ -405,6 +410,20 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
     max_time = mzm_data.time.values[-1]
 
     min_time = pd.to_datetime(min_time)
+
+    if post_fit_trend_start is not None:
+        post_fit_time_index = mzm_data.time.values >= np.datetime64(post_fit_trend_start)
+
+        t = mzm_data.time.values[post_fit_time_index]
+
+        # Doesn't account for leap years
+        X_post_fit_trend = (t - t[0])/10 / np.timedelta64(365, 'D')
+
+        X_post_fit_trend -= np.nanmean(X_post_fit_trend)
+
+        X_post_fit_trend = X_post_fit_trend.reshape((-1, 1))
+
+        X_post_fit_trend = sm.add_constant(X_post_fit_trend, prepend=False)
 
     if min_time.day != 1:
         min_time -= pd.DateOffset(months=1)
@@ -437,6 +456,10 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
         ret[pred] = (coords, copy(sized_nans))
         ret[pred + "_std"] = (coords, copy(sized_nans))
 
+    if post_fit_trend_start is not None:
+        ret['linear_post'] = (coords, copy(sized_nans))
+        ret['linear_post' + "_std"] = (coords, copy(sized_nans))
+
     for id_x, x in enumerate(mzm_data[coords[0]].values):
         for id_y, y in enumerate(mzm_data[coords[1]].values):
 
@@ -445,8 +468,12 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
 
             if sigma is not None:
                 sigma_bin = sigma.loc[{coords[0]: x, coords[1]: y}].values
+                if post_fit_trend_start is not None:
+                    sigma_post_fit = sigma_bin[post_fit_time_index]
             else:
                 sigma_bin = None
+                if post_fit_trend_start is not None:
+                    sigma_post_fit = None
 
             try:
                 output = mzm_regression(X, Y, sigma=sigma_bin, **kwargs)
@@ -455,6 +482,16 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                 for idx, col in enumerate(pred_list):
                     ret[col][id_x, id_y] = output['gls_results'].params[idx]
                     ret[col + '_std'][id_x, id_y] = std_error[idx]
+
+                if post_fit_trend_start is not None:
+                    Y_post_fit = output['residual'][post_fit_time_index]
+
+                    Y_post_fit -= np.nanmean(Y_post_fit)
+
+                    post_fit_output = mzm_regression(X_post_fit_trend, Y_post_fit, sigma_post_fit, do_autocorrelation=kwargs.get('do_autocorrelation', True))
+                    std_error = np.sqrt(np.diag(post_fit_output['gls_results'].cov_params()))
+                    ret['linear_post'][id_x, id_y] = post_fit_output['gls_results'].params[0]
+                    ret['linear_post_std'][id_x, id_y] = std_error[0]
 
             except Exception as e:
                 if debug:
