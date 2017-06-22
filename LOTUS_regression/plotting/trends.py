@@ -93,3 +93,32 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
             plt.plot(lats, alts, 'k', linewidth=0.1)
             plt.plot(lats, alts[::-1], 'k', linewidth=0.1)
     return im
+
+
+def post_with_confidence(data, x = 'mean_latitude', y = 'altitude', post_name = 'linear_post',
+    figsize = (10, 6), clim = 10, contour = True, ylim = None, log_y = False, x_label = None, y_label = None,
+    post_title = None, c_label = None):
+    fig = plt.figure(figsize=figsize)
+
+    im = plot_with_confidence(data, post_name, x, y, clim, contour=contour)
+    if ylim is not None:
+        plt.ylim(ylim)
+
+    if x_label is not None:
+        plt.xlabel(x_label)
+
+    if y_label is not None:
+        plt.ylabel(y_label)
+
+    if post_title is not None:
+        plt.title(post_title)
+
+    if log_y:
+        plt.yscale('log')
+
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.025, 0.7])
+    if c_label:
+        fig.colorbar(im, cax=cbar_ax, label=c_label)
+    else:
+        fig.colorbar(im, cax=cbar_ax)
