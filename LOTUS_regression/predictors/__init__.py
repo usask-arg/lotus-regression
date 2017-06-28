@@ -1,5 +1,6 @@
 from LOTUS_regression.predictors import download
 import os
+import pandas as pd
 
 
 def load_data(filename):
@@ -14,8 +15,7 @@ def load_data(filename):
 
 
 def remake_example_data():
-    pred = download.load_linear(1997)
-
+    pred = pd.DataFrame()
     pred['enso'] = download.load_enso(2)
 
     pred['trop'] = download.load_trop(True)
@@ -28,7 +28,11 @@ def remake_example_data():
 
     pred.index.name = 'time'
 
-    pred = pred.rename(columns={'pre': 'linear_pre', 'post': 'linear_post'})
+    pred -= pred.mean()
+    pred /= pred.std()
+
+    pred['linear_pre'] = download.load_linear(1997)['pre']
+    pred['linear_post'] = download.load_linear(1997)['post']
 
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'predictors.csv'))
 
