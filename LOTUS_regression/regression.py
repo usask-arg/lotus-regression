@@ -436,6 +436,9 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
     predictors = predictors[(tstamp >= min_time) & (tstamp <= max_time)]
     pred_list = list(predictors.columns.values)
 
+    if len(predictors) != len(mzm_data.time.values):
+        raise ValueError('Input predictors do not cover the full time period')
+
     # (nsamples, npredictors) matrix
     X = predictors.values
 
