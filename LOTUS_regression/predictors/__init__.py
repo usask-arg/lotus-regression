@@ -6,4 +6,5 @@ def load_data(filename):
 
     data = pd.read_csv(file_path, parse_dates=True, index_col='time')
 
-    return data[(data.index > '1977') & (data.index < '2017')]
+    return data[(data.index > '1977')]
+
