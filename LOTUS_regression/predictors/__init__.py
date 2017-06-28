@@ -22,9 +22,13 @@ def remake_example_data():
 
     pred['solar'] = download.load_solar()
 
-    pred['qbo_pcaA'] = download.load_qbo(3)['pca']
-    pred['qbo_pcaB'] = download.load_qbo(3)['pcb']
-    pred['qbo_pcaC'] = download.load_qbo(3)['pcc']
+    pred['qboA'] = download.load_qbo(3)['pca']
+    pred['qboB'] = download.load_qbo(3)['pcb']
+    pred['qboC'] = download.load_qbo(3)['pcc']
+
+    pred.index.name = 'time'
+
+    pred = pred.rename(columns={'pre': 'linear_pre', 'post': 'linear_post'})
 
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'predictors.csv'))
 
