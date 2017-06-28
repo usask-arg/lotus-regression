@@ -53,9 +53,9 @@ def load_linear(inflection=1997):
     """
     num_months = 12 * (pd.datetime.now().year - 1974) + pd.datetime.now().month
     index = pd.date_range('1975-01', periods=num_months, freq='M').to_period(freq='M')
-    pre = 1/120*pd.Series([t - 12 * (inflection - 1980) if t < 12 * (inflection - 1980) else 0 for t in range(num_months)], index=index,
+    pre = 1/120*pd.Series([t - 12 * (inflection - 1975) if t < 12 * (inflection - 1975) else 0 for t in range(num_months)], index=index,
                     name='pre')
-    post = 1/120*pd.Series([t - 12 * (inflection - 1980) if t > 12 * (inflection - 1980) else 0 for t in range(num_months)], index=index,
+    post = 1/120*pd.Series([t - 12 * (inflection - 1975) if t > 12 * (inflection - 1975) else 0 for t in range(num_months)], index=index,
                      name='post')
     return pd.concat([pre, post], axis=1)
 
