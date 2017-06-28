@@ -51,14 +51,15 @@ def load_linear(inflection=1997):
     ----------
     inflection : int, Optional. Default 1997
     """
-    num_months = 12 * (pd.datetime.now().year - 1979) + pd.datetime.now().month
-    index = pd.date_range('1980-01', periods=num_months, freq='M').to_period(freq='M')
-    pre = 1/120*pd.Series([t - 12 * (inflection - 1980) if t < 12 * (inflection - 1980) else 0 for t in range(num_months)], index=index,
+    start_year = 1974
+
+    num_months = 12 * (pd.datetime.now().year - start_year) + pd.datetime.now().month
+    index = pd.date_range('1975-01', periods=num_months, freq='M').to_period(freq='M')
+    pre = 1/120*pd.Series([t - 12 * (inflection - (start_year+1)) if t < 12 * (inflection - (start_year+1)) else 0 for t in range(num_months)], index=index,
                     name='pre')
-    post = 1/120*pd.Series([t - 12 * (inflection - 1980) if t > 12 * (inflection - 1980) else 0 for t in range(num_months)], index=index,
+    post = 1/120*pd.Series([t - 12 * (inflection - (start_year+1)) if t > 12 * (inflection - (start_year+1)) else 0 for t in range(num_months)], index=index,
                      name='post')
     return pd.concat([pre, post], axis=1)
-
 
 def load_qbo(pca=3):
     """
@@ -69,28 +70,28 @@ def load_qbo(pca=3):
     ----------
     pca : int, optional.  Default 3.
     """
-    # yymm date parser
     import sklearn.decomposition as decomp
+    # yymm date parser
     def date_parser(s):
         s = int(s)
         return pd.datetime(2000 + s // 100 if (s // 100) < 50 else 1900 + s // 100, s % 100, 1)
 
-    # Line 381 is the beginning of 1984.
-    # Starting here makes parsing the file much, much easier.
-    data = pd.read_table('http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat', skiprows=381, header=None,
+    data = pd.read_fwf('http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat',
+                       skiprows=200, header=None,
+                       colspecs=[(0, 5), (6, 10), (12, 16), (19, 23), (26, 30), (33, 37), (40, 44), (47, 51), (54, 58)],
                          delim_whitespace=True, index_col=1, parse_dates=True, date_parser=date_parser,
                          names=['station', 'month', '70', '50', '40', '30', '20', '15', '10'])
     data.index = data.index.to_period(freq='M')
-    assert(data.index[0] == pd.Period('1984-01', 'M'))
 
     data.drop('station', axis=1, inplace=True)
 
     if pca > 0:
-        pca = decomp.PCA(n_components=pca)
-        data['pca'], data['pcb'], data['pcc'] = pca.fit_transform(data.values).T
+        from string import ascii_lowercase
+        pca_d = decomp.PCA(n_components=3)
+        for idx, c in zip(range(pca), ascii_lowercase):
+            data['pc' + c] = pca_d.fit_transform(data.values).T[idx, :]
 
     return data
-
 
 def load_solar():
     """
