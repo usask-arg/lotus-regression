@@ -84,6 +84,7 @@ def load_qbo(pca=3):
     data.index = data.index.to_period(freq='M')
 
     data.drop('station', axis=1, inplace=True)
+    data = data[:-1]
 
     if pca > 0:
         from string import ascii_lowercase
