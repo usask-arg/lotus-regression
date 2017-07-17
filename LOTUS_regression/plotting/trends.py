@@ -97,8 +97,9 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
 
 def post_with_confidence(data, x = 'mean_latitude', y = 'altitude', post_name = 'linear_post',
     figsize = (10, 6), clim = 10, contour = True, ylim = None, log_y = False, x_label = None, y_label = None,
-    post_title = None, c_label = None):
-    fig = plt.figure(figsize=figsize)
+    post_title = None, c_label = None, fig=None):
+    if fig is None:
+        fig = plt.figure(figsize=figsize)
 
     im = plot_with_confidence(data, post_name, x, y, clim, contour=contour)
     if ylim is not None:
