@@ -61,6 +61,68 @@ def load_linear(inflection=1997):
                      name='post')
     return pd.concat([pre, post], axis=1)
 
+
+def load_independent_linear(pre_trend_end='1997-01-01', post_trend_start='2000-01-01'):
+    """
+    Creates the predictors required for performing independent linear trends.
+
+    Parameters
+    ----------
+    pre_trend_end: str, Optional. Default '1997-01-01'
+
+    post_trend_start: str, Optional.  Default '2000-01-01'
+    """
+    NS_IN_YEAR = float(31556952000000000)
+
+    start_year = 1974
+
+    num_months = 12 * (pd.datetime.now().year - start_year) + pd.datetime.now().month
+    index = pd.date_range('1975-01', periods=num_months, freq='M').to_period(freq='M')
+
+    pre_delta = -1*(index.to_timestamp() - pd.to_datetime(pre_trend_end)).values
+    post_delta = (index.to_timestamp() - pd.to_datetime(post_trend_start)).values
+
+    assert(pre_delta.dtype == np.dtype('<m8[ns]'))
+    assert(post_delta.dtype == np.dtype('<m8[ns]'))
+
+    pre_delta = pre_delta.astype(np.int64) / NS_IN_YEAR
+    post_delta = post_delta.astype(np.int64) / NS_IN_YEAR
+
+    pre_const = np.ones_like(pre_delta)
+    pre_const[pre_delta < 0] = 0
+
+    post_const = np.ones_like(post_delta)
+    post_const[post_delta < 0] = 0
+
+    # Check if we need a gap constant
+    pre_plus_post = pre_const + post_const
+    if np.any(pre_plus_post == 0):
+        need_gap_constant = True
+
+        gap_constant = np.ones_like(pre_plus_post)
+        gap_constant[pre_plus_post == 1] = 0
+
+        gap_constant = pd.Series(gap_constant, index=index, name='gap_const')
+    else:
+        need_gap_constant = False
+
+    pre_delta[pre_delta < 0] = 0
+    post_delta[post_delta < 0] = 0
+
+    pre = pd.Series(-1*pre_delta / 10, index=index, name='pre')
+    post = pd.Series(post_delta / 10, index=index, name='post')
+
+    post_const = pd.Series(post_const, index=index, name='post_const')
+    pre_const = pd.Series(pre_const, index=index, name='pre_const')
+
+    if need_gap_constant:
+        data = pd.concat([pre, post, post_const, pre_const, gap_constant], axis=1)
+    else:
+        data = pd.concat([pre, post, post_const, pre_const], axis=1)
+
+    return data
+
+
 def load_qbo(pca=3):
     """
     Loads the QBO from http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat.  If pca is set to an integer (default 3) then
@@ -93,6 +155,7 @@ def load_qbo(pca=3):
             data['pc' + c] = pca_d.fit_transform(data.values).T[idx, :]
 
     return data
+
 
 def load_solar():
     """
@@ -236,7 +299,23 @@ def load_giss_aod():
 
     data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1)).to_period(freq='M')
     data.index.names = ['time']
-    return data['tau']
+
+    # Find the last non-zero entry and extend to the current date
+    last_nonzero_idx = data[data['tau'] != 0].index[-1]
+    last_nonzero_idx = np.argmax(data.index == last_nonzero_idx)
+
+    # Extend the index to approximately now
+    num_months = 12 * (pd.datetime.now().year - data.index[0].year) + pd.datetime.now().month
+    index = pd.date_range(data.index[0].to_timestamp(), periods=num_months, freq='M').to_period(freq='M')
+
+    # New values
+    vals = np.zeros(len(index))
+    vals[:last_nonzero_idx] = data['tau'].values[:last_nonzero_idx]
+    vals[last_nonzero_idx:] = data['tau'].values[last_nonzero_idx]
+
+    new_aod = pd.Series(vals, index=index, name='aod')
+
+    return new_aod
 
 
 def load_solar_mg2():
