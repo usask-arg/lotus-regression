@@ -88,7 +88,7 @@ def load_qbo(pca=3):
 
     if pca > 0:
         from string import ascii_lowercase
-        pca_d = decomp.PCA(n_components=3)
+        pca_d = decomp.PCA(n_components=pca)
         for idx, c in zip(range(pca), ascii_lowercase):
             data['pc' + c] = pca_d.fit_transform(data.values).T[idx, :]
 
