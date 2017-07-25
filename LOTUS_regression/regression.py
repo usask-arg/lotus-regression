@@ -489,6 +489,13 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                 if post_fit_trend_start is not None:
                     Y_post_fit = output['residual'][post_fit_time_index]
 
+                    # If we did the initial fit with linear terms or the EESC we need to add these back in to the
+                    # residuals
+                    for idx, pred in enumerate(pred_list):
+                        if 'linear' in pred.lower() or 'eesc' in pred.lower():
+                            contrib = output['gls_results'].params[idx] * X[post_fit_time_index, idx]
+                            Y_post_fit += contrib
+
                     Y_post_fit -= np.nanmean(Y_post_fit)
 
                     post_fit_output = mzm_regression(X_post_fit_trend, Y_post_fit, sigma_post_fit, do_autocorrelation=kwargs.get('do_autocorrelation', True))
