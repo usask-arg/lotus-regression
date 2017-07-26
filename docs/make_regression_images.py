@@ -3,6 +3,8 @@
 
 # In[ ]:
 
+import matplotlib
+matplotlib.use('agg')
 
 from LOTUS_regression.predictors import load_data
 import matplotlib.pyplot as plt
