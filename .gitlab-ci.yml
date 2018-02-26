@@ -4,7 +4,8 @@ stages:
   - deploy
 
 variables:
-  OUTPUT_DIR: /media/users/djz828/regression/
+  OUTPUT_WHEEL_DIR: /www/wheels/
+  OUTPUT_DOC_DIR: /www/docs/
 
 test_py27:
   stage: test
