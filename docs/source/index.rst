@@ -69,8 +69,8 @@ necessary to run the examples you may run::
 
 Satellite Datasets
 ^^^^^^^^^^^^^^^^^^
-Here the piecewise linear trends are calculated for three satellite datasets.  Both the GOZCARDS and SBUV datasets
-are not deseasonalized, so seasonal components are added to the predictors prior to fitting.
+Here the piecewise linear trends are calculated for different satellite datasets.  The GOZCARDS dataset
+is not deseasonalized, so seasonal components are added to the predictors prior to fitting.
 
 .. toctree::
    :maxdepth: 2
@@ -78,7 +78,6 @@ are not deseasonalized, so seasonal components are added to the predictors prior
 
    examples/GOZCARDS Trends
    examples/Sage II-OSIRIS-OMPS-LP Trends
-   examples/SBUV Trends
 
 Other Functionality
 ^^^^^^^^^^^^^^^^^^^
