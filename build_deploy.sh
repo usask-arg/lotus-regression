@@ -4,7 +4,7 @@ python setup.py install
 
 python setup.py bdist_wheel
 
-[ -z "$CI_COMMIT_TAG" ] && OUTPUT_WHEEL_DIR="$OUTPUT_DIR""dev/"
+[ -z "$CI_COMMIT_TAG" ] && OUTPUT_WHEEL_DIR="$OUTPUT_WHEEL_DIR""dev/"
 
 cp dist/*.whl "$OUTPUT_WHEEL_DIR/"
 
@@ -14,5 +14,7 @@ python make_regression_images.py
 make html
 
 [ -z "$CI_COMMIT_TAG" ] && OUTPUT_DOC_DIR="$OUTPUT_DOC_DIR""dev/"
+
+mkdir -p $OUTPUT_DOC_DIR
 
 cp -r build/html/* "$OUTPUT_DOC_DIR"

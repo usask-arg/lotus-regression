@@ -5,7 +5,7 @@ stages:
 
 variables:
   OUTPUT_WHEEL_DIR: /www/wheels/
-  OUTPUT_DOC_DIR: /www/docs/
+  OUTPUT_DOC_DIR: /www/docs/LOTUS_regression/
 
 test_py27:
   stage: test
