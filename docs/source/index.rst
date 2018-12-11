@@ -15,11 +15,11 @@ The code is tested on Python versions `2.7, 3.4, 3.5, 3.6` and should work on an
 however we recommend using the `Anaconda python distribution <https://www.continuum.io/downloads>`_ which by default comes with Python
 version `3.6`.  Some of the example code may also be incompatible with Python `2.7`
 
-A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs`
+A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs, netcdf4, dask`
 which should be automatically be installed upon installing the package, if you are using anaconda you can verify/install
 that these packages are available by running::
 
-   conda install numpy scipy pandas xarray statsmodels requests appdirs
+   conda install numpy scipy pandas xarray statsmodels requests appdirs netcdf4 dask
 
 How To Install
 ^^^^^^^^^^^^^^
@@ -27,6 +27,9 @@ The code can be installed by running::
 
    pip install LOTUS_regression -f https://arg.usask.ca/wheels/
 
+What's New in Version 0.5.1
+---------------------------
+ * Updated the documentation and code to be compatible with the newest version of pandas.
 
 What's New in Version 0.5
 -------------------------

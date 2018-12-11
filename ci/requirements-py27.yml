@@ -5,8 +5,10 @@ dependencies:
   - pandas
   - scipy
   - statsmodels
-  - jpeg=8d
+  - xarray
+  - jpeg
   - netcdf4
+  - libnetcdf=4.5
   - hdf5
   - hdf4
   - dask
