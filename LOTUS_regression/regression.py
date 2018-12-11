@@ -429,7 +429,7 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
         min_time -= pd.DateOffset(months=1)
 
     if isinstance(predictors.index, pd.DatetimeIndex):
-        tstamp = predictors.index.to_datetime()
+        tstamp = pd.to_datetime(predictors.index)
     else:
         tstamp = predictors.index.to_timestamp()
 
