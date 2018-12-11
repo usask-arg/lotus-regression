@@ -26,7 +26,7 @@ build_deploy:
     - tags
   before_script:
     - apt update
-    - apt install make libgl1-mesa-swx11 -y
+    - apt install make libgl1-mesa-glx -y
   script:
     - conda env create --file docs/environment.yml > /dev/null 2>&1
     - source activate doc_env
