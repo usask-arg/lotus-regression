@@ -7,6 +7,8 @@ import xarray as xr
 import os
 import appdirs
 import time
+from datetime import datetime
+from io import StringIO
 
 
 def load_eesc():
@@ -138,7 +140,7 @@ def load_qbo(pca=3):
         s = int(s)
         return pd.datetime(2000 + s // 100 if (s // 100) < 50 else 1900 + s // 100, s % 100, 1)
 
-    data = pd.read_fwf('http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat',
+    data = pd.read_fwf(StringIO(requests.get('http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat').text),
                        skiprows=200, header=None,
                        colspecs=[(0, 5), (6, 10), (12, 16), (19, 23), (26, 30), (33, 37), (40, 44), (47, 51), (54, 58)],
                          delim_whitespace=True, index_col=1, parse_dates=True, date_parser=date_parser,
@@ -161,23 +163,29 @@ def load_solar():
     """
     Gets the solar F10.7 from 'http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php'.
     """
-    page = requests.get('http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php')
+    sess = requests.session()
+    sess.get('https://omniweb.gsfc.nasa.gov/')
 
-    start = page.text.rindex('Absolute Flux') + len('Absolute Flux')
-    end = page.text.index('</table>', start)
+    today = datetime.today()
 
-    text = page.text[start:end]
+    page = sess.get('https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&res=daily&spacecraft=omni2_daily&start_date=19631128&end_date={}&vars=50&scale=Linear&ymin=&ymax=&charsize=&symsize=0.5&symbol=0&imagex=640&imagey=480'.format(today.strftime('%Y%M%d')))
 
-    text = re.sub("[^0-9.]", " ", text)
-    values = text.split()
-    table = [values[5 * i:5 * (i + 1)] for i in range(len(values) // 5)]
+    # Won't have data for today, find the largest possible range
+    last_day = page.text[page.text.rindex('19631128 - ') + 11:page.text.rindex('19631128 - ') + 8 + 11]
 
-    solar = pd.DataFrame([[int(row[0]), int(row[1]), float(row[4])] for row in table],
-                         columns=['year', 'month', 'f10.7'])
+    page = sess.get('https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&res=daily&spacecraft=omni2_daily&start_date=19631128&end_date={}&vars=50&scale=Linear&ymin=&ymax=&charsize=&symsize=0.5&symbol=0&imagex=640&imagey=480'.format(last_day))
 
-    solar['dt'] = solar.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
+    data = StringIO(page.text[page.text.rindex('YEAR'):page.text.rindex('<hr>')])
 
-    return solar.set_index(keys='dt')['f10.7']
+    solar = pd.read_csv(data, delimiter='\s+')
+    solar = solar[:-1]
+
+    solar['dt'] = pd.to_datetime((solar['YEAR'].astype('int') * 1000) + solar['DOY'].astype(int), format='%Y%j')
+    solar = solar.set_index(keys='dt')
+    solar = solar.where(solar['1'] != 999.9)
+    solar = solar.resample('MS').mean()
+
+    return solar['1'].rename('f10.7').to_period(freq='M')
 
 
 def load_trop(deseasonalize=True):
@@ -368,3 +376,6 @@ def load_orthogonal_eesc(filename):
     data /= data.std()
 
     return data
+
+if __name__ == "__main__":
+    load_solar()
