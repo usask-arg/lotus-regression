@@ -27,18 +27,19 @@ def load_eesc():
 
 def load_enso(lag_months=0):
     """
-    Downloads the ENSO from http://www.esrl.noaa.gov/psd/enso/mei/table.html
+    Downloads the ENSO from https://www.esrl.noaa.gov/psd/enso/mei/data/meiv2.data
 
     Parameters
     ----------
     lag_months : int, Optional. Default 0
         The numbers of months of lag to introduce to the ENSO signal
     """
-    data = pd.read_table('http://www.esrl.noaa.gov/psd/enso/mei/table.html', skiprows=12, skipfooter=41, sep='\s+',
-                         index_col=0, engine='python')
-    assert (data.index[0] == 1950)
-    data = data.stack(dropna=True)
-    data.index = pd.date_range(start='1950', periods=len(data), freq='M').to_period()
+    data = pd.read_table('https://www.esrl.noaa.gov/psd/enso/mei/data/meiv2.data', skiprows=1, skipfooter=4, sep='\s+',
+                         index_col=0, engine='python', header=None)
+    assert (data.index[0] == 1979)
+    data = data.stack()
+    data = data[data > -998]
+    data.index = pd.date_range(start='1979', periods=len(data), freq='M').to_period()
 
     data = data.shift(lag_months)
 
