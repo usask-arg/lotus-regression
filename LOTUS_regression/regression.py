@@ -368,7 +368,8 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
     return output
 
 
-def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, post_fit_trend_start=None, **kwargs):
+def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, post_fit_trend_start=None,
+                     include_monthly_fits=False, **kwargs):
     """
     Performs the regression for a dataset in all bins.
 
@@ -436,6 +437,30 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
     predictors = predictors[(tstamp >= min_time) & (tstamp <= max_time)]
     pred_list = list(predictors.columns.values)
 
+    seasonal_comp_info = dict()
+    if include_monthly_fits:
+        # Find the predictors with seasonal components
+        seasonal_comps = [a for a in pred_list if 'sin0' in a or 'cos0' in a]
+        seasonal_comps = list(set([s[:-5] for s in seasonal_comps]))
+
+        days = pd.date_range('1997-01-01', '1997-12-01', freq='MS')
+        day_factor = (days.dayofyear - 1) / 365.25
+
+        for seasonal_comp in seasonal_comps:
+            num_comp = int((len([a for a in pred_list if seasonal_comp in a]) - 1) / 2)
+            seasonal_comp_info[seasonal_comp] = dict()
+            seasonal_comp_info[seasonal_comp]['num_component'] = num_comp
+
+            seasonal_comp_info[seasonal_comp]['pred_matrix'] = np.zeros((len(pred_list), len(day_factor)))
+
+            for idx in range(num_comp):
+                cos_idx = pred_list.index(seasonal_comp + '_cos{}'.format(idx))
+                sin_idx = pred_list.index(seasonal_comp + '_sin{}'.format(idx))
+                seasonal_comp_info[seasonal_comp]['pred_matrix'][cos_idx, :] = np.cos(2*np.pi*day_factor * idx+1)
+                seasonal_comp_info[seasonal_comp]['pred_matrix'][sin_idx, :] = np.sin(2*np.pi*day_factor * idx+1)
+            const_idx = pred_list.index(seasonal_comp)
+            seasonal_comp_info[seasonal_comp]['pred_matrix'][const_idx, :] = 1
+
     if len(predictors) != len(mzm_data.time.values):
         raise ValueError('Input predictors do not cover the full time period')
 
@@ -455,9 +480,16 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
 
     sized_nans = np.ones([len(mzm_data[c].values) for c in coords]) * np.nan
 
+    if include_monthly_fits:
+        ret.coords['month'] = np.arange(1, 12.5, 1).astype(int)
+
     for pred in pred_list:
         ret[pred] = (coords, copy(sized_nans))
         ret[pred + "_std"] = (coords, copy(sized_nans))
+
+        if pred in seasonal_comp_info:
+            ret[pred + '_monthly'] = (np.concatenate((coords, ['month'])), np.repeat(sized_nans[:, :,  np.newaxis], 12, axis=2))
+            ret[pred + '_monthly_std'] = (np.concatenate((coords, ['month'])), np.repeat(sized_nans[:, :,  np.newaxis], 12, axis=2))
 
     if post_fit_trend_start is not None:
         ret['linear_post'] = (coords, copy(sized_nans))
@@ -482,9 +514,17 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                 output = mzm_regression(X, Y, sigma=sigma_bin, **kwargs)
                 std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
+
+
                 for idx, col in enumerate(pred_list):
                     ret[col][id_x, id_y] = output['gls_results'].params[idx]
                     ret[col + '_std'][id_x, id_y] = std_error[idx]
+
+                    if col in seasonal_comp_info:
+                        ret[col  + '_monthly'][id_x, id_y] = seasonal_comp_info[col]['pred_matrix'].T @ output['gls_results'].params
+                        ret[col + '_monthly_std'][id_x, id_y] = np.sqrt(np.diag(seasonal_comp_info[col][
+                            'pred_matrix'].T @ output['gls_results'].cov_params() @ seasonal_comp_info[col][
+                            'pred_matrix']))
 
                 if post_fit_trend_start is not None:
                     Y_post_fit = output['residual'][post_fit_time_index]
