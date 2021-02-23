@@ -27,6 +27,12 @@ The code can be installed by running::
 
    pip install LOTUS_regression -f https://arg.usask.ca/wheels/
 
+What's New in Version 0.7.1
+---------------------------
+ * Updated predictors to the end of 2020
+ * Added an option `include_monthly_fits` to estimate seasonal trends
+ * Added an option `return_raw_results` to return the raw statsmodel regression results
+
 What's New in Version 0.5.1
 ---------------------------
  * Updated the documentation and code to be compatible with the newest version of pandas.
