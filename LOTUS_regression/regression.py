@@ -4,6 +4,7 @@ from collections import namedtuple
 import xarray as xr
 import pandas as pd
 from copy import copy
+import statsmodels
 
 
 def _corrected_ar1_covariance(sigma, gaps, rho):
@@ -369,7 +370,8 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
 
 
 def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, post_fit_trend_start=None,
-                     include_monthly_fits=False, **kwargs):
+                     include_monthly_fits=False,
+                     return_raw_results=False, **kwargs):
     """
     Performs the regression for a dataset in all bins.
 
@@ -495,6 +497,9 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
         ret['linear_post'] = (coords, copy(sized_nans))
         ret['linear_post' + "_std"] = (coords, copy(sized_nans))
 
+    if return_raw_results:
+        raw_results = np.empty((len(mzm_data[coords[0]].values), len(mzm_data[coords[1]].values)), dtype=statsmodels.regression.linear_model.RegressionResultsWrapper)
+
     for id_x, x in enumerate(mzm_data[coords[0]].values):
         for id_y, y in enumerate(mzm_data[coords[1]].values):
 
@@ -514,7 +519,8 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                 output = mzm_regression(X, Y, sigma=sigma_bin, **kwargs)
                 std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
-
+                if return_raw_results:
+                    raw_results[id_x, id_y] = output['gls_results']
 
                 for idx, col in enumerate(pred_list):
                     ret[col][id_x, id_y] = output['gls_results'].params[idx]
@@ -547,4 +553,7 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                 if debug:
                     print(e)
 
-    return ret
+    if return_raw_results:
+        return ret, raw_results
+    else:
+        return ret
