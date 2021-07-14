@@ -7,12 +7,12 @@ variables:
   OUTPUT_WHEEL_DIR: /www/wheels/
   OUTPUT_DOC_DIR: /www/docs/LOTUS_regression/
 
-test_py36:
+test_py38:
   stage: test
   tags:
     - docker
   script:
-    - conda env create --file ci/requirements-py36.yml > /dev/null 2>&1
+    - conda env create --file ci/requirements-py38.yml > /dev/null 2>&1
     - source activate test_env
     - python setup.py install
     - py.test

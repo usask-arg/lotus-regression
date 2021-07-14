@@ -27,6 +27,14 @@ The code can be installed by running::
 
    pip install LOTUS_regression -f https://arg.usask.ca/wheels/
 
+What's New in Version 0.8.0
+---------------------------
+ * Updated predictors to 2021-05-01
+ * Added a new predictor file `pred_baseline_ilt_continuous` that is a version of the ILT where continuity is enforced across the gap
+ * Updated predictors documentation to include the new option
+ * Removed tropopause pressure from the baseline predictors (this was never used for any analysis but was just leftover)
+ * Default aerosol OD predictor is now from GloSSAC instead of GISS, old GISS predictor is still available in an extra predictors file
+
 What's New in Version 0.7.1
 ---------------------------
  * Updated predictors to the end of 2020

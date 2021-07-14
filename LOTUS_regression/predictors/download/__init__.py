@@ -105,7 +105,15 @@ def load_independent_linear(pre_trend_end='1997-01-01', post_trend_start='2000-0
         gap_constant = np.ones_like(pre_plus_post)
         gap_constant[pre_plus_post == 1] = 0
 
+        gap_linear = np.ones_like(pre_plus_post)
+        gap_linear[pre_plus_post == 1] = 0
+
+        lt = (index.to_timestamp() - pd.to_datetime(pre_trend_end)).values
+        lt = lt.astype(np.int64) / NS_IN_YEAR
+        gap_linear *= lt
+
         gap_constant = pd.Series(gap_constant, index=index, name='gap_const')
+        gap_linear = pd.Series(gap_linear, index=index, name='gap_linear')
     else:
         need_gap_constant = False
 
@@ -119,7 +127,7 @@ def load_independent_linear(pre_trend_end='1997-01-01', post_trend_start='2000-0
     pre_const = pd.Series(pre_const, index=index, name='pre_const')
 
     if need_gap_constant:
-        data = pd.concat([pre, post, post_const, pre_const, gap_constant], axis=1)
+        data = pd.concat([pre, post, post_const, pre_const, gap_constant, gap_linear], axis=1)
     else:
         data = pd.concat([pre, post, post_const, pre_const], axis=1)
 
@@ -325,6 +333,33 @@ def load_giss_aod():
     new_aod = pd.Series(vals, index=index, name='aod')
 
     return new_aod
+
+
+def load_glossac_aod():
+    data = xr.open_dataset(r'X:/data/sasktran/GloSSAC_V2_CF.nc')
+
+    times = data.time.values
+    years = times // 100
+    months = times % 100
+
+    # Extend the index to approximately now
+    num_months = 12 * (pd.datetime.now().year - years[0]) + pd.datetime.now().month
+    index = pd.date_range(pd.to_datetime(datetime(year=years[0], month=months[0], day=1)), periods=num_months, freq='M').to_period(freq='M')
+
+    aod = data.sel(wavelengths_glossac=525)['Glossac_Aerosol_Optical_Depth'].values
+    latitudes = data.lat.values
+    integration_weights = np.cos(np.deg2rad(latitudes))
+    integration_weights /= np.nansum(integration_weights)
+
+    aod = np.trapz(aod * integration_weights[np.newaxis, :], axis=1)
+
+    extended_aod = np.zeros(len(index))
+    extended_aod[:len(aod)] = aod
+    extended_aod[len(aod):] = aod[-1]
+
+    aod_df = pd.Series(extended_aod, index=index, name='aod')
+
+    return aod_df
 
 
 def load_solar_mg2():

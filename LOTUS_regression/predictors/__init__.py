@@ -41,11 +41,11 @@ def remake_example_data():
 def make_baseline_pwlt():
     pred = pd.DataFrame()
     pred['enso'] = download.load_enso(0)
-    pred['trop'] = download.load_trop(True)
+    # pred['trop'] = download.load_trop(True)
     pred['solar'] = download.load_solar()
     pred['qboA'] = download.load_qbo(2)['pca']
     pred['qboB'] = download.load_qbo(2)['pcb']
-    pred['aod'] = download.load_giss_aod()
+    pred['aod'] = download.load_glossac_aod()
 
     pred.index.name = 'time'
 
@@ -60,14 +60,15 @@ def make_baseline_pwlt():
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_pwlt.csv'))
 
 
-def make_baseline_ilt():
+def make_baseline_ilt(include_gap_linear=False,
+                      adjust_for_contiunity=False):
     pred = pd.DataFrame()
     pred['enso'] = download.load_enso(0)
-    pred['trop'] = download.load_trop(True)
+    # pred['trop'] = download.load_trop(True)
     pred['solar'] = download.load_solar()
     pred['qboA'] = download.load_qbo(2)['pca']
     pred['qboB'] = download.load_qbo(2)['pcb']
-    pred['aod'] = download.load_giss_aod()
+    pred['aod'] = download.load_glossac_aod()
 
     pred.index.name = 'time'
 
@@ -82,31 +83,63 @@ def make_baseline_ilt():
     pred['post_const'] = linear['post_const']
     pred['gap_cons'] = linear['gap_const']
 
-    pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_ilt.csv'))
+    if include_gap_linear:
+        pred['gap_linear'] = linear['gap_linear']
+
+    if adjust_for_contiunity:
+        linear['gap_linear'] /= linear['gap_linear'].max()
+        pred = pred.drop(['gap_cons'], axis=1)
+        pred['pre_const'] -= linear['gap_linear']
+        pred['pre_const'] += linear['gap_const']
+        pred['post_const'] += linear['gap_linear']
+
+    if not include_gap_linear:
+        if adjust_for_contiunity:
+            pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_ilt_continuous.csv'))
+        else:
+            pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_ilt.csv'))
+    else:
+        pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_ilt_linear_gap.csv'))
 
 
 def make_baseline_eesc():
     pred = pd.DataFrame()
     pred['enso'] = download.load_enso(0)
-    pred['trop'] = download.load_trop(True)
+    # pred['trop'] = download.load_trop(True)
     pred['solar'] = download.load_solar()
     pred['qboA'] = download.load_qbo(2)['pca']
     pred['qboB'] = download.load_qbo(2)['pcb']
-    pred['aod'] = download.load_giss_aod()
+    pred['aod'] = download.load_glossac_aod()
 
     pred.index.name = 'time'
 
     pred -= pred.mean()
     pred /= pred.std()
 
-    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc('Z:/data/LOTUS/proxies/EESC_Damadeo/eesc.txt')[['eesc_1', 'eesc_2']]
+    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc(r'\\datastore\valhalla/data/LOTUS/proxies/EESC_Damadeo/eesc.txt')[['eesc_1', 'eesc_2']]
 
     pred['constant'] = np.ones(len(pred.index))
 
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_eesc.csv'))
 
+def make_extra_predictors():
+    pred = pd.DataFrame()
+    pred['giss_aod'] = download.load_giss_aod()
+    pred['tropopause_pressure'] = download.load_trop(True)
+
+    pred.index.name = 'time'
+
+    pred -= pred.mean()
+    pred /= pred.std()
+
+    pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_extra.csv'))
+
+
 if __name__ == "__main__":
+    make_extra_predictors()
     make_baseline_pwlt()
     make_baseline_ilt()
+    make_baseline_ilt(True)
+    make_baseline_ilt(False, True)
     make_baseline_eesc()
     remake_example_data()

@@ -15,6 +15,7 @@ dependencies:
   - dask
   - scikit-learn
   - requests
+  - pip
   - pip:
     - sphinx
     - sphinx_rtd_theme

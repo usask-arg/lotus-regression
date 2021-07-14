@@ -225,7 +225,9 @@ def _heteroscedasticity_correction_factors(residual, fit_functions, log_space=Fa
 
 def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrelation=True, do_heteroscedasticity=False,
                    extra_heteroscedasticity=None, heteroscedasticity_merged_flag=None,
-                   seasonal_harmonics=(3, 4, 6, 12)):
+                   seasonal_harmonics=(3, 4, 6, 12),
+                   constrain_ilt_gap=False,
+                   ilt_predictor_index_dict=None):
     """
     Performs the regression for a single bin.
 
@@ -253,6 +255,12 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
         independant time periods where the heteroscedasticity correction is applied.
     seasonal_harmonics : Iterable Float, optional.  Default (3, 4, 6, 12)
         The monthly harmonics to use in the heteroscedasticity correction.
+    constrain_ilt_gap : bool, optional. Default False.
+        If true then a constraint is added so that the ILT terms in the gap period enforce continuity.  This must be
+        set in conjunction with ilt_predictor_index_dict
+    ilt_predictor_index_dict : dict, optional. Default None.
+        If using constrain_ilt_gap, this must be a dictionary {predictor_name: index_in X} which contains the indicies
+        of the predictors 'gap_cons', 'pre_const', 'post_const', 'gap_linear', 'linear_pre', 'linear_post'
 
     Returns
     -------
@@ -313,6 +321,30 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
         model = sm.GLS(Y, X, covar)
         results = model.fit()
 
+        if constrain_ilt_gap:
+            model_glm = sm.GLM(model.wendog, model.wexog)
+            gap_const = model.exog[:, ilt_predictor_index_dict['gap_cons']]
+            start_x_index = np.nonzero(gap_const)[0][0]
+            end_x_index = np.nonzero(gap_const)[0][-1]
+
+            constraint_R = np.zeros((2, X.shape[1]))
+            constraint_q = np.zeros(2)
+
+            # first continuity constraint is at start index, gap_const = pre_const
+
+            constraint_R[0, ilt_predictor_index_dict['gap_cons']] = 1
+            constraint_R[0, ilt_predictor_index_dict['pre_const']] = -1
+            constraint_q[0] = 0
+
+            # Second continuity constraint is at the end index, gap_const + gap_linear = post_const
+            constraint_R[1, ilt_predictor_index_dict['gap_cons']] = 1
+            constraint_R[1, ilt_predictor_index_dict['gap_linear']] = model.exog[end_x_index, ilt_predictor_index_dict['gap_linear']]
+            constraint_R[1, ilt_predictor_index_dict['post_const']] = -1
+            constraint_q[1] = 0
+
+            results = model_glm.fit_constrained((constraint_R, constraint_q))
+            results.resid = (model.wendog - results.fittedvalues)
+
         # Find the autocorrelation coefficient, if we are not doing autocorrelation set rho to 0 so that later our
         # variable transformations are still valid
         if do_autocorrelation:
@@ -371,7 +403,9 @@ def mzm_regression(X, Y, sigma=None, tolerance=1e-2, max_iter=50, do_autocorrela
 
 def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma=None, post_fit_trend_start=None,
                      include_monthly_fits=False,
-                     return_raw_results=False, **kwargs):
+                     return_raw_results=False,
+                     constrain_ilt_gap=False,
+                     **kwargs):
     """
     Performs the regression for a dataset in all bins.
 
@@ -395,6 +429,12 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
         If set to a datetime like object (example: '2000-01-01') then a linear trend is post fit to the residuals with
         the specified start date.  If this is set you should not include a linear term in the predictors or the
         results will not be valid
+
+    constrain_ilt_gap: bool, optional. Default False
+        If True then a constraint is added to the regression so that the fit terms in the gap period maintain
+        continunity when doing ILT trends.  The predictors must have keys 'gap_cons', 'post_const', 'pre_const',
+        'linear_pre', 'linear_post', and 'gap_linear' for this option to work.  This is the standard case when using
+        the 'predictors_baseline_ilt_linear_gap' file.
 
     kwargs
         Other arguments passed to mzm_regression
@@ -500,6 +540,16 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
     if return_raw_results:
         raw_results = np.empty((len(mzm_data[coords[0]].values), len(mzm_data[coords[1]].values)), dtype=statsmodels.regression.linear_model.RegressionResultsWrapper)
 
+    if constrain_ilt_gap:
+        necessary_predictors = ['gap_cons', 'pre_const', 'post_const', 'linear_pre', 'linear_post', 'gap_linear']
+        constrain_index_dict = dict()
+        for pred in necessary_predictors:
+            if pred not in pred_list:
+                raise ValueError('When using constrain_ilt_gap the predictors must contain gap_cons, pre_const, post_const, linear_pre, linear_post, and gap_linear.')
+            constrain_index_dict[pred] = pred_list.index(pred)
+    else:
+        constrain_index_dict = None
+
     for id_x, x in enumerate(mzm_data[coords[0]].values):
         for id_y, y in enumerate(mzm_data[coords[1]].values):
 
@@ -516,7 +566,8 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
                     sigma_post_fit = None
 
             try:
-                output = mzm_regression(X, Y, sigma=sigma_bin, **kwargs)
+                output = mzm_regression(X, Y, sigma=sigma_bin, constrain_ilt_gap=constrain_ilt_gap,
+                                        ilt_predictor_index_dict=constrain_index_dict, **kwargs)
                 std_error = np.sqrt(np.diag(output['gls_results'].cov_params()))
 
                 if return_raw_results:
@@ -544,7 +595,9 @@ def regress_all_bins(predictors, mzm_data, time_field='time', debug=False, sigma
 
                     Y_post_fit -= np.nanmean(Y_post_fit)
 
-                    post_fit_output = mzm_regression(X_post_fit_trend, Y_post_fit, sigma_post_fit, do_autocorrelation=kwargs.get('do_autocorrelation', True))
+                    post_fit_output = mzm_regression(X_post_fit_trend, Y_post_fit, sigma_post_fit, do_autocorrelation=kwargs.get('do_autocorrelation', True),
+                                                     constrain_ilt_gap=constrain_ilt_gap,
+                                                     ilt_predictor_index_dict=constrain_index_dict)
                     std_error = np.sqrt(np.diag(post_fit_output['gls_results'].cov_params()))
                     ret['linear_post'][id_x, id_y] = post_fit_output['gls_results'].params[0]
                     ret['linear_post_std'][id_x, id_y] = std_error[0]
