@@ -41,7 +41,7 @@ def get_config():
     cfg = VersioneerConfig()
     cfg.VCS = "git"
     cfg.style = "pep440"
-    cfg.tag_prefix = ""
+    cfg.tag_prefix = "v"
     cfg.parentdir_prefix = "LOTUS_regression-"
     cfg.versionfile_source = "LOTUS_regression/_version.py"
     cfg.verbose = False
