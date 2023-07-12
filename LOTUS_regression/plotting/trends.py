@@ -63,11 +63,11 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
         vals = data[name].values
 
     if contour:
-        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r', alpha=0)
+        C = plt.pcolor(data[x].values, data[y].values, vals, cmap='RdBu_r', alpha=0)
 
         im = plt.contourf(data[x].values, data[y].values, vals, cmap='RdBu_r', levels=levels)
     else:
-        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r')
+        C = plt.pcolor(data[x].values, data[y].values, vals, cmap='RdBu_r')
         im = C
 
 
