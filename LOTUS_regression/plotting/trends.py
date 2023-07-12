@@ -79,7 +79,7 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
 
     for idx, p in enumerate(C._paths):
         mean_lat = np.nanmean(np.unique(p._vertices[:, 0]))
-        mean_alt = np.nanmean(np.unique(p._vertices[0, 1]))
+        mean_alt = np.nanmean(np.unique(p._vertices[:, 1]))
 
         mask = significant.loc[{x: mean_lat, y: mean_alt}].values
 
