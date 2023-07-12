@@ -63,11 +63,11 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
         vals = data[name].values
 
     if contour:
-        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r', alpha=0)
+        C = plt.pcolor(data[x].values, data[y].values, vals, cmap='RdBu_r', alpha=0)
 
         im = plt.contourf(data[x].values, data[y].values, vals, cmap='RdBu_r', levels=levels)
     else:
-        C = plt.pcolor(xs, data[y].values, vals, cmap='RdBu_r')
+        C = plt.pcolor(data[x].values, data[y].values, vals, cmap='RdBu_r')
         im = C
 
 
@@ -79,9 +79,9 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
 
     for idx, p in enumerate(C._paths):
         mean_lat = np.nanmean(np.unique(p._vertices[:, 0]))
-        mean_alt = np.nanmean(np.unique(p._vertices[0, 1]))
+        mean_alt = np.nanmean(np.unique(p._vertices[:, 1]))
 
-        mask = significant.loc[{x: mean_lat, y: mean_alt}].values
+        mask = significant.sel({x: mean_lat, y:mean_alt}, method='nearest').values
 
         if ~mask:
             # Hatching doesnt seem to work very well

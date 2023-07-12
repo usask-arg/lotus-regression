@@ -1,9 +1,11 @@
 # LOTUS Regression
+A multi-linear regression model specifically designed for use in calculation of trends for atmospheric constituents.
+Developed as part of the LOTUS initiative (https://www.sparc-climate.org/activities/ozone-trends/, https://lotus.aeronomie.be)
 
 ## Installation Requirements
-The code is tested on Python versions `2.7, 3.4, 3.5, 3.6` and should work on any of them,
-however we recommend using the [Anaconda python distribution](https://www.continuum.io/downloads) which by default comes with Python
-version `3.6`. 
+The code is tested on Python versions `3.8, 3.9, 3,10, 3.11` and should work on any of them,
+however we recommend using the [Anaconda python distribution](https://www.continuum.io/downloads).
 
-A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels` which are available
-by default in Anaconda.
+
+## Documentation
+For more indepth documentation see http://arg.usask.ca/docs/LOTUS_regression/

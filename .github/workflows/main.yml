@@ -1,0 +1,171 @@
+name: 'Build, Test, and Upload Wheels/Docs'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+  release:
+    types:
+      - published
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-wheels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Conda build environment 
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test_env
+          environment-file: ci/requirements-py310.yml
+          auto-activate-base: false
+
+      - name: build wheels
+        run: |
+          python setup.py bdist_wheel
+
+      - name: Save wheel artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  test-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        py_version: [py38, py39, py310, py311]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test_env
+          environment-file: ci/requirements-${{ matrix.py_version }}.yml
+          auto-activate-base: false
+
+      - name: Test package
+        shell: bash -el {0}
+        run: |
+          python setup.py install
+          py.test
+
+  build-docs:
+    runs-on: ubuntu-latest
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      contents: write      # to deploy to Pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Conda build environment 
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: doc_env
+          environment-file: docs/environment.yml
+          auto-activate-base: false
+
+      - name: Build Sphinx Docs
+        shell: bash -el {0}
+        run: |
+          python setup.py install
+          cd docs
+          mkdir -p source/images
+          python make_regression_images.py
+          make html
+
+      - name: Save doc pages
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: docs/build/html
+      
+  upload-docs-to-pages:
+    needs: build-docs
+    runs-on: ubuntu-latest
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      contents: write      # to deploy to Pages
+
+    steps:
+      - name: Download doc artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: docs
+
+      - name: Deploy dev docs
+        uses: peaceiris/actions-gh-pages@v3
+        if: (github.event_name == 'push') && (github.ref == 'refs/heads/main')
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs
+          destination_dir: dev
+
+      - name: Deploy release docs
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.event_name == 'release'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs
+
+  upload-to-test-pypi:
+    needs: [test-package, build-docs, build-wheels]
+    if: (github.event_name == 'push') && (github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/lotus-regression
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download linux wheel artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.7
+        with:
+          repository_url: https://test.pypi.org/legacy/
+          verbose: true
+  
+  upload-to-pypi:
+    needs: [test-package, build-docs, build-wheels]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/lotus-regression
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download linux wheel artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.7
+        with:
+          verbose: true
