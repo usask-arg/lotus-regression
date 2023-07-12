@@ -81,7 +81,7 @@ def plot_with_confidence(data, name, x='mean_latitude', y='altitude', clim=10, c
         mean_lat = np.nanmean(np.unique(p._vertices[:, 0]))
         mean_alt = np.nanmean(np.unique(p._vertices[:, 1]))
 
-        mask = significant.loc[{x: mean_lat, y: mean_alt}].values
+        mask = significant.sel({x: mean_lat, y:mean_alt}, method='nearest').values
 
         if ~mask:
             # Hatching doesnt seem to work very well
