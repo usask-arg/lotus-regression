@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predictors &mdash; LOTUS Regression 0+untagged.1.g28c79be documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running the Regression for a Single Bin" href="SingleBin.html" />
+    <link rel="prev" title="Trends with the SAGE II / OSIRIS / OMPS-LP Dataset" href="Sage%20II-OSIRIS-OMPS-LP%20Trends.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LOTUS Regression
+          </a>
+              <div class="version">
+                0+untagged.1.g28c79be
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Technical%20Note.html">Technical Note on the Baseline Regression Implementation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="GOZCARDS%20Trends.html">Trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GOZCARDS%20Trends%20Seasonal.html">Seasonal trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Sage%20II-OSIRIS-OMPS-LP%20Trends.html">Trends with the SAGE II / OSIRIS / OMPS-LP Dataset</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#Extra-Predictors">Extra Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SingleBin.html">Running the Regression for a Single Bin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Changing%20the%20Linear%20Components.html">Changing the Linear Components</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LOTUS Regression</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Predictors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/Predictors.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Predictors">
+<h1>Predictors<a class="headerlink" href="#Predictors" title="Permalink to this heading">¶</a></h1>
+<p>Predictors are something that can be created separately from this package if desired, however, for convenience we provide a sample set of predictors as well as some convenience methods for creating new ones.</p>
+<p>The sample set of predictors can be loaded in with</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">LOTUS_regression.predictors</span> <span class="k">as</span> <span class="nn">predictors</span>
+
+<span class="n">pred</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;pred_baseline_pwlt.csv&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">pred</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+                enso     solar      qboA      qboB       aod  linear_pre  \
+time
+1979-01-01  0.499274  1.568564 -0.991782 -0.925437 -0.395539   -1.800000
+1979-02-01  0.281624  1.622217 -1.024426 -1.028774 -0.396092   -1.791667
+1979-03-01 -0.070762  1.312212 -1.147750 -0.659631 -0.397189   -1.783333
+1979-04-01  0.219438  1.127112 -1.138165 -0.399319 -0.399997   -1.775000
+1979-05-01  0.291988  1.002103 -1.205567  0.058949 -0.403881   -1.766667
+
+            linear_post  constant
+time
+1979-01-01          0.0       1.0
+1979-02-01          0.0       1.0
+1979-03-01          0.0       1.0
+1979-04-01          0.0       1.0
+1979-05-01          0.0       1.0
+</pre></div></div>
+</div>
+<p>The sample set contains</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>* ENSO from http://www.esrl.noaa.gov/psd/enso/mei/table.html
+* Three orthogonal components of the QBO from http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat calculated with PCA
+* Solar f10.7 from http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php
+* Piecewise linear terms with an inflection at 1997 that are expressed in per decade
+* GloSSAC AOD from https://asdc.larc.nasa.gov/project/GloSSAC/GloSSAC_2.0
+</pre></div>
+</div>
+<p>These predictors (with the exception of the linear terms) have been scaled to have mean 0 with standard deviation of 1. Each predictor begins in 1978 and ends at 2021-05. A constant is also included by default.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pred</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_Predictors_4_0.png" src="../_images/examples_Predictors_4_0.png" />
+</div>
+</div>
+<p>Three other baseline predictor files are included, <code class="docutils literal notranslate"><span class="pre">pred_baseline_eesc.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">pred_baseline_ilt.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">pred_baseline_ilt_continuous.csv</span></code>. Predictors are similar between the four files with the exception of the linear terms.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pred_baseline_eesc.csv</span></code> contains two orthogonal components of the EESC calculated using principal component analysis for different mean ages of air instead of the piecewise linear term.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pred_baseline_ilt.csv</span></code> also contains two linear terms, the first is the “pre” term ending at 1997-01-01, and the second is the “post” term beginning at 2000-01-01. The difference is that multiple constant terms are included which allow the two time periods to be essentially independent of each other. This is in contrast with the PWLT predictors which force a common value at 1997</p>
+<p><code class="docutils literal notranslate"><span class="pre">pred_baseline_ilt_continuous.csv</span></code> is a modification of the previous ILT terms where continuity is enforced at the start of the pre period (1997-01-01) and the start of the post period (2000-01-01). This is done by modifying the pre and post constants to include a linear variation within the gap period.</p>
+<p>Functions are also provided to download each individual predictor from its respective source</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">LOTUS_regression.predictors.download</span> <span class="k">as</span> <span class="nn">download</span>
+
+<span class="n">enso</span> <span class="o">=</span> <span class="n">download</span><span class="o">.</span><span class="n">load_enso</span><span class="p">()</span>
+
+<span class="n">enso</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_Predictors_7_0.png" src="../_images/examples_Predictors_7_0.png" />
+</div>
+</div>
+<p>One final tool included is the ability to create predictors modulated by seasonal components. This is useful if you are regressing to data that has not been deseasonalized.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">LOTUS_regression.predictors.seasonal</span> <span class="kn">import</span> <span class="n">add_seasonal_components</span>
+
+<span class="n">const_with_seasons</span> <span class="o">=</span> <span class="n">add_seasonal_components</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;constant&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span>
+
+<span class="n">const_with_seasons</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_Predictors_9_0.png" src="../_images/examples_Predictors_9_0.png" />
+</div>
+</div>
+</section>
+<section id="Extra-Predictors">
+<h1>Extra Predictors<a class="headerlink" href="#Extra-Predictors" title="Permalink to this heading">¶</a></h1>
+<p>Some additional predictors are included for testing purposes, these currently are tropopause pressure and the GISS AOD. The additional predictors can be loaded in with</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">extra_predictors</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;pred_extra.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>and used to modify the standard predictors. E.g., we can change the GloSSAC AOD to the GISS AOD with</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pred</span><span class="p">[</span><span class="s1">&#39;aod&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_predictors</span><span class="p">[</span><span class="s1">&#39;giss_aod&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Sage%20II-OSIRIS-OMPS-LP%20Trends.html" class="btn btn-neutral float-left" title="Trends with the SAGE II / OSIRIS / OMPS-LP Dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="SingleBin.html" class="btn btn-neutral float-right" title="Running the Regression for a Single Bin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
