@@ -55,6 +55,7 @@ jobs:
           auto-activate-base: false
 
       - name: Test package
+        shell: bash -el {0}
         run: |
           python setup.py install
           py.test
