@@ -40,7 +40,6 @@ jobs:
 
   test-package:
     runs-on: ubuntu-latest
-    container: continuumio/anaconda3
     strategy:
       matrix:
         py_version: [py38, py39, py310, py311]
@@ -124,7 +123,7 @@ jobs:
           publish_dir: docs
 
   upload-to-test-pypi:
-    needs: [test-package, build-docs]
+    needs: [test-package, build-docs, build-wheels]
     if: (github.event_name == 'push') && (github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
 
@@ -148,7 +147,7 @@ jobs:
           verbose: true
   
   upload-to-pypi:
-    needs: [test-package, build-docs]
+    needs: [test-package, build-docs, build-wheels]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
 
