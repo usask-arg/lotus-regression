@@ -11,9 +11,9 @@ Installation
 
 Requirements
 ^^^^^^^^^^^^
-The code is tested on Python versions `2.7, 3.4, 3.5, 3.6, 3.7, 3.8` and should work on any of them,
+The code is tested on Python versions `3.8, 3.9, 3.10, 3.11` and should work on any of them,
 however we recommend using the `Anaconda python distribution <https://www.continuum.io/downloads>`_ which by default comes with Python
-version `3.8`.  Some of the example code may also be incompatible with Python `2.7`
+version `3.x`.  Some of the example code may also be incompatible with Python `2.7`
 
 A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs, netcdf4, dask`
 which should be automatically be installed upon installing the package, if you are using anaconda you can verify/install
@@ -25,7 +25,17 @@ How To Install
 ^^^^^^^^^^^^^^
 The code can be installed by running::
 
-   pip install LOTUS_regression -f https://arg.usask.ca/wheels/
+   pip install lotus-regression
+
+
+Development
+-----------
+The model is open-source and can be found at https://github.com/usask-arg/lotus-regression
+
+What's New in Version 0.8.1
+---------------------------
+ * Development of the code has moved to github (https://github.com/usask-arg/lotus-regression)
+ * No functional changes
 
 What's New in Version 0.8.0
 ---------------------------
