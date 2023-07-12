@@ -10,3 +10,4 @@ dist/
 *.md
 *.ipynb_checkpoints*
 examples/*
+.DS_store
