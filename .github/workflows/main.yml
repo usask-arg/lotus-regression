@@ -35,11 +35,10 @@ jobs:
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: wheels-linux
+          name: wheels
           path: dist
 
-  test-wheels-linux:
-    needs: build-cpp-wheels-manylinux2014
+  test-package:
     runs-on: ubuntu-latest
     container: continuumio/anaconda3
     strategy:
@@ -78,12 +77,6 @@ jobs:
           activate-environment: doc_env
           environment-file: docs/environment.yml
           auto-activate-base: false
-
-      - name: Download wheel artifacts 
-        uses: actions/download-artifact@v3
-        with:
-          name: wheels-linux
-          path: wheelhouse
 
       - name: Build Sphinx Docs
         shell: bash -el {0}
@@ -131,7 +124,7 @@ jobs:
           publish_dir: docs
 
   upload-to-test-pypi:
-    needs: [test-wheels-linux, build-docs]
+    needs: [test-package, build-docs]
     if: (github.event_name == 'push') && (github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
 
@@ -145,7 +138,7 @@ jobs:
       - name: Download linux wheel artifacts
         uses: actions/download-artifact@v3
         with:
-          name: wheels-linux
+          name: wheels
           path: dist
 
       - name: Publish package to TestPyPI
@@ -155,7 +148,7 @@ jobs:
           verbose: true
   
   upload-to-pypi:
-    needs: [test-wheels-linux, build-docs]
+    needs: [test-package, build-docs]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
 
@@ -169,7 +162,7 @@ jobs:
       - name: Download linux wheel artifacts
         uses: actions/download-artifact@v3
         with:
-          name: wheels-linux
+          name: wheels
           path: dist
 
       - name: Publish package to PyPI
