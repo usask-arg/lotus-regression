@@ -56,7 +56,7 @@ def load_linear(inflection=1997):
     """
     start_year = 1974
 
-    num_months = 12 * (pd.datetime.now().year - start_year) + pd.datetime.now().month
+    num_months = 12 * (pd.to_datetime('today').year - start_year) + pd.to_datetime('today').month
     index = pd.date_range('1975-01', periods=num_months, freq='M').to_period(freq='M')
     pre = 1/120*pd.Series([t - 12 * (inflection - (start_year+1)) if t < 12 * (inflection - (start_year+1)) else 0 for t in range(num_months)], index=index,
                     name='pre')
@@ -79,7 +79,7 @@ def load_independent_linear(pre_trend_end='1997-01-01', post_trend_start='2000-0
 
     start_year = 1974
 
-    num_months = 12 * (pd.datetime.now().year - start_year) + pd.datetime.now().month
+    num_months = 12 * (pd.to_datetime('today').year - start_year) + pd.to_datetime('today').month
     index = pd.date_range('1975-01', periods=num_months, freq='M').to_period(freq='M')
 
     pre_delta = -1*(index.to_timestamp() - pd.to_datetime(pre_trend_end)).values
@@ -136,28 +136,22 @@ def load_independent_linear(pre_trend_end='1997-01-01', post_trend_start='2000-0
 
 def load_qbo(pca=3):
     """
-    Loads the QBO from http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat.  If pca is set to an integer (default 3) then
-    that many principal components are taken.  If pca is set to 0 then the raw QBO data is returned.
+    Loads the QBO from https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt'.
+    If pca is set to an integer (default 3) then that many principal components are taken.
+    If pca is set to 0 then the raw QBO data is returned.
 
     Parameters
     ----------
     pca : int, optional.  Default 3.
     """
     import sklearn.decomposition as decomp
-    # yymm date parser
-    def date_parser(s):
-        s = int(s)
-        return pd.datetime(2000 + s // 100 if (s // 100) < 50 else 1900 + s // 100, s % 100, 1)
 
-    data = pd.read_fwf(StringIO(requests.get('http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat').text),
-                       skiprows=200, header=None,
-                       colspecs=[(0, 5), (6, 10), (12, 16), (19, 23), (26, 30), (33, 37), (40, 44), (47, 51), (54, 58)],
-                         delim_whitespace=True, index_col=1, parse_dates=True, date_parser=date_parser,
-                         names=['station', 'month', '70', '50', '40', '30', '20', '15', '10'])
+    data = pd.read_table('https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt',
+                         skiprows=9, header=None, names=['Month', 'Year', '300', '250', '200', '150', '100', '90', '80',
+                                                         '70', '50', '40', '30', '20', '15', '10'], delim_whitespace=True)
+    data.index = pd.to_datetime({'year': data['Year'], 'month': data['Month'], 'day': np.ones(len(data))})
+    data = data.drop(columns=['Year', 'Month'])
     data.index = data.index.to_period(freq='M')
-
-    data.drop('station', axis=1, inplace=True)
-    data = data[:-1]
 
     if pca > 0:
         from string import ascii_lowercase
