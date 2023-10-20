@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regression &mdash; LOTUS Regression 0+untagged.1.gd97d98c documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=91c1995a"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Predictors" href="api_predictors.html" />
+    <link rel="prev" title="API Reference" href="api_reference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LOTUS Regression
+          </a>
+              <div class="version">
+                0+untagged.1.gd97d98c
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="Technical%20Note.html">Technical Note on the Baseline Regression Implementation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/GOZCARDS%20Trends.html">Trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/GOZCARDS%20Trends%20Seasonal.html">Seasonal trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Sage%20II-OSIRIS-OMPS-LP%20Trends.html">Trends with the SAGE II / OSIRIS / OMPS-LP Dataset</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/Predictors.html">Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Predictors.html#Extra-Predictors">Extra Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/SingleBin.html">Running the Regression for a Single Bin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Changing%20the%20Linear%20Components.html">Changing the Linear Components</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Regression</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#LOTUS_regression.regression.mzm_regression"><code class="docutils literal notranslate"><span class="pre">mzm_regression()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#LOTUS_regression.regression.regress_all_bins"><code class="docutils literal notranslate"><span class="pre">regress_all_bins()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api_predictors.html">Predictors</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LOTUS Regression</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Regression</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_regression.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-LOTUS_regression.regression">
+<span id="regression"></span><h1>Regression<a class="headerlink" href="#module-LOTUS_regression.regression" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="LOTUS_regression.regression.mzm_regression">
+<span class="sig-prename descclassname"><span class="pre">LOTUS_regression.regression.</span></span><span class="sig-name descname"><span class="pre">mzm_regression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_autocorrelation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_heteroscedasticity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_heteroscedasticity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heteroscedasticity_merged_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seasonal_harmonics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">4,</span> <span class="pre">6,</span> <span class="pre">12)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constrain_ilt_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ilt_predictor_index_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LOTUS_regression/regression.html#mzm_regression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#LOTUS_regression.regression.mzm_regression" title="Link to this definition">¶</a></dt>
+<dd><p>Performs the regression for a single bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – (nsamples, npredictors) Array of predictor basis functions</p></li>
+<li><p><strong>Y</strong> (<em>np.array</em>) – (nsamples) Observations</p></li>
+<li><p><strong>sigma</strong> (<em>np.array</em>) – (nsamples) Square root of the diagonal elements of the covariance matrix for Y</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em><em>, </em><em>optional</em>) – Iterations stop when the relative difference in the AR1 coefficient is less than this threshold.  Default 1e-2</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations to perform.  Default 50</p></li>
+<li><p><strong>do_autocorrelation</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, do the AR1 autocorrelation correction on the covariance matrix.  Default True.</p></li>
+<li><p><strong>do_heteroscedasticity</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, do the heteroscedasticity correction on the covariance matrix.  Default False.</p></li>
+<li><p><strong>extra_heteroscedasticity</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – (nsamples, nextrapredictors) Extra predictor functions to use in the heteroscedasticity correction.</p></li>
+<li><p><strong>heteroscedasticity_merged_flag</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – (nsamples) A flag indicating time periods that should be treated independently in the heteroscedasticity
+correction.  E.g. this could be something like [0, 0, 0, 0, 2, 2, 2, 1, 1, 1] which would create 3
+independant time periods where the heteroscedasticity correction is applied.</p></li>
+<li><p><strong>seasonal_harmonics</strong> (<em>Iterable Float</em><em>, </em><em>optional.  Default</em><em> (</em><em>3</em><em>, </em><em>4</em><em>, </em><em>6</em><em>, </em><em>12</em><em>)</em>) – The monthly harmonics to use in the heteroscedasticity correction.</p></li>
+<li><p><strong>constrain_ilt_gap</strong> (<em>bool</em><em>, </em><em>optional. Default False.</em>) – If true then a constraint is added so that the ILT terms in the gap period enforce continuity.  This must be
+set in conjunction with ilt_predictor_index_dict</p></li>
+<li><p><strong>ilt_predictor_index_dict</strong> (<em>dict</em><em>, </em><em>optional. Default None.</em>) – If using constrain_ilt_gap, this must be a dictionary {predictor_name: index_in X} which contains the indicies
+of the predictors ‘gap_cons’, ‘pre_const’, ‘post_const’, ‘gap_linear’, ‘linear_pre’, ‘linear_post’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>results</strong> – a dictionary of outputs with keys:
+<code class="docutils literal notranslate"><span class="pre">gls_results</span></code></p>
+<blockquote>
+<div><p>The raw regression output.  This is an instance of <cite>RegressionResults</cite> which is documented at
+<a class="reference external" href="http://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.RegressionResults.html">http://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.RegressionResults.html</a></p>
+</div></blockquote>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">residual</span></code></dt><dd><p>Residuals of the fit in the original coordinate system.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">transformed_residuals</span></code></dt><dd><p>Residuals of the fit in the GLS transformed coordinates.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">autocorrelation</span></code></dt><dd><p>The AR1 correlation constant.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">numiter</span></code></dt><dd><p>Number of iterative steps performed.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">covariance</span></code></dt><dd><p>Calculated covariance of Y that is input to the GLS model.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="LOTUS_regression.regression.regress_all_bins">
+<span class="sig-prename descclassname"><span class="pre">LOTUS_regression.regression.</span></span><span class="sig-name descname"><span class="pre">regress_all_bins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mzm_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_fit_trend_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_monthly_fits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_raw_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constrain_ilt_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/LOTUS_regression/regression.html#regress_all_bins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#LOTUS_regression.regression.regress_all_bins" title="Link to this definition">¶</a></dt>
+<dd><p>Performs the regression for a dataset in all bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictors</strong> (<em>pd.Dataframe</em>) – Dataframe of predictors to use in the regression.  Index should be a time field.</p></li>
+<li><p><strong>mzm_data</strong> (<em>xr.DataArray</em>) – DataArray containing the monthly zonal mean data in a variety of bins.  The data should be three dimensional
+with one dimension representing time.  The other two dimensions are typically latitude and a vertical coordinate.</p></li>
+<li><p><strong>time_field</strong> (<em>string</em>) – Name of the time field in the mzm_data structure</p></li>
+<li><p><strong>sigma</strong> (<em>xr.DataArray</em><em>, </em><em>optional.  Default None</em>) – If not None then the regression is weighted as if sigma is the standard deviation of mzm_data.  Should be in the
+same format as mzm_data.</p></li>
+<li><p><strong>post_fit_trend_start</strong> (<em>datetimelike</em><em>, </em><em>optional. Default None</em>) – If set to a datetime like object (example: ‘2000-01-01’) then a linear trend is post fit to the residuals with
+the specified start date.  If this is set you should not include a linear term in the predictors or the
+results will not be valid</p></li>
+<li><p><strong>constrain_ilt_gap</strong> (<em>bool</em><em>, </em><em>optional. Default False</em>) – If True then a constraint is added to the regression so that the fit terms in the gap period maintain
+continunity when doing ILT trends.  The predictors must have keys ‘gap_cons’, ‘post_const’, ‘pre_const’,
+‘linear_pre’, ‘linear_post’, and ‘gap_linear’ for this option to work.  This is the standard case when using
+the ‘predictors_baseline_ilt_linear_gap’ file.</p></li>
+<li><p><strong>kwargs</strong> – Other arguments passed to mzm_regression</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>xr.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api_reference.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_predictors.html" class="btn btn-neutral float-right" title="Predictors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
