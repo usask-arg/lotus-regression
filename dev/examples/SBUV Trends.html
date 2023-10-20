@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trends with the SBUV NOAA Dataset &mdash; LOTUS Regression 0+untagged.1.gd97d98c documentation</title>
+  <title>Trends with the SBUV NOAA Dataset &mdash; LOTUS Regression 0+untagged.1.ge19e228 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,7 +12,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/documentation_options.js?v=91c1995a"></script>
+        <script src="../_static/documentation_options.js?v=3117a972"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -35,7 +35,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.gd97d98c
+                0+untagged.1.ge19e228
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -118,7 +118,7 @@ Cell <span class="ansi-green-fg">In[2], line 9</span>
 <span class="ansi-green-intense-fg ansi-bold">      6</span> <span class="ansi-bold" style="color: rgb(0,135,0)">from</span> <span class="ansi-bold" style="color: rgb(0,0,255)">LOTUS_regression</span><span class="ansi-bold" style="color: rgb(0,0,255)">.</span><span class="ansi-bold" style="color: rgb(0,0,255)">predictors</span> <span class="ansi-bold" style="color: rgb(0,135,0)">import</span> load_data
 <span class="ansi-green-fg">----&gt; 9</span> data <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">SBUV_NOAA</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">r</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">/home/runner/work/lotus-regression/lotus-regression/test_data//SBUV_NOAA/</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg">)</span>
 
-File <span class="ansi-green-fg">/usr/share/miniconda/envs/doc_env/lib/python3.10/site-packages/LOTUS_regression-0+untagged.1.gd97d98c-py3.10.egg/LOTUS_regression/dataset/sbuv.py:16</span>, in <span class="ansi-cyan-fg">SBUV_NOAA</span><span class="ansi-blue-fg">(folder)</span>
+File <span class="ansi-green-fg">/usr/share/miniconda/envs/doc_env/lib/python3.10/site-packages/LOTUS_regression-0+untagged.1.ge19e228-py3.10.egg/LOTUS_regression/dataset/sbuv.py:16</span>, in <span class="ansi-cyan-fg">SBUV_NOAA</span><span class="ansi-blue-fg">(folder)</span>
 <span class="ansi-green-intense-fg ansi-bold">     12</span> vmr_files <span style="color: rgb(98,98,98)">=</span> glob<span style="color: rgb(98,98,98)">.</span>glob(os<span style="color: rgb(98,98,98)">.</span>path<span style="color: rgb(98,98,98)">.</span>join(folder, <span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">*_mn*_vmr.dat</span><span style="color: rgb(175,0,0)">&#39;</span>))
 <span class="ansi-green-intense-fg ansi-bold">     14</span> data <span style="color: rgb(98,98,98)">=</span> xr<span style="color: rgb(98,98,98)">.</span>concat([_parse_SBUV_NOAA(f) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> f <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> vmr_files], dim<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">time</span><span style="color: rgb(175,0,0)">&#39;</span>)
 <span class="ansi-green-fg">---&gt; 16</span> data <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">isel</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">time</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">data</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">time</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#39;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">argsort</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">)</span>
