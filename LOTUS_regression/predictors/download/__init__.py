@@ -20,7 +20,7 @@ def load_eesc():
             0.0040246245, -0.03355533, 0.14525718, 0.71710218, 0.1809734]
     np.polyval(poly, 1)
 
-    num_months = 12 * (pd.datetime.now().year - 1979) + pd.datetime.now().month
+    num_months = 12 * (pd.to_datetime('today').year - 1979) + pd.to_datetime('today').month
     index = pd.date_range('1979-01', periods=num_months, freq='M').to_period(freq='M')
     return pd.Series([np.polyval(poly, month/12) for month in range(num_months)], index=index)
 
@@ -186,6 +186,7 @@ def load_solar():
     solar['dt'] = pd.to_datetime((solar['YEAR'].astype('int') * 1000) + solar['DOY'].astype(int), format='%Y%j')
     solar = solar.set_index(keys='dt')
     solar = solar.where(solar['1'] != 999.9)
+    solar = solar.drop(columns=['YEAR', 'DOY', 'HR'])
     solar = solar.resample('MS').mean()
 
     return solar['1'].rename('f10.7').to_period(freq='M')
@@ -238,7 +239,7 @@ def load_ao():
                          header=None,
                          names=['year', 'month', 'ao'])
 
-    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
+    data['dt'] = pd.to_datetime({'year': data.year, 'month': data.month, 'day': np.ones(len(data))}).dt.to_period(freq='M')
 
     return data.set_index(keys='dt')['ao']
 
@@ -249,7 +250,7 @@ def load_aao():
                          header=None,
                          names=['year', 'month', 'aao'])
 
-    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(freq='M')
+    data['dt'] = pd.to_datetime({'year': data.year, 'month': data.month, 'day': np.ones(len(data))}).dt.to_period(freq='M')
 
     return data.set_index(keys='dt')['aao']
 
@@ -265,8 +266,7 @@ def load_nao():
         header=None,
         names=['year', 'month', 'nao'])
 
-    data['dt'] = data.apply(lambda row: pd.datetime(int(row.year), int(row.month), 1), axis=1).dt.to_period(
-        freq='M')
+    data['dt'] = pd.to_datetime({'year': data.year, 'month': data.month, 'day': np.ones(len(data))}).dt.to_period(freq='M')
 
     return data.set_index(keys='dt')['nao']
 
@@ -278,8 +278,7 @@ def load_ehf(filename):
     """
     data = pd.read_table(filename, delim_whitespace=True, header=None, skiprows=4, names=['year', 'month', 'sh_ehf', 'nh_ehf'])
 
-    data['dt'] = data.apply(lambda row: pd.datetime(int(np.floor(row.year)), int(row.month), 1), axis=1).dt.to_period(
-        freq='M')
+    data['dt'] = pd.to_datetime({'year': data.year, 'month': data.month, 'day': np.ones(len(data))}).dt.to_period(freq='M')
 
     data = data.drop(['year', 'month'], axis=1)
 
@@ -308,7 +307,7 @@ def load_giss_aod():
 
     data = data.mean(dim='lat')['tau'].to_dataframe()
 
-    data.index = data.index.map(lambda row: pd.datetime(int(row.year), int(row.month), 1)).to_period(freq='M')
+    data.index = data.index.to_period(freq='M')
     data.index.names = ['time']
 
     # Find the last non-zero entry and extend to the current date
@@ -316,7 +315,7 @@ def load_giss_aod():
     last_nonzero_idx = np.argmax(data.index == last_nonzero_idx)
 
     # Extend the index to approximately now
-    num_months = 12 * (pd.datetime.now().year - data.index[0].year) + pd.datetime.now().month
+    num_months = 12 * (pd.to_datetime('today').year - data.index[0].year) + pd.to_datetime('today').month
     index = pd.date_range(data.index[0].to_timestamp(), periods=num_months, freq='M').to_period(freq='M')
 
     # New values
@@ -330,14 +329,14 @@ def load_giss_aod():
 
 
 def load_glossac_aod():
-    data = xr.open_dataset(r'X:/data/sasktran/GloSSAC_V2_CF.nc')
+    data = xr.open_dataset('https://opendap.larc.nasa.gov/opendap/GloSSAC/GloSSAC_2.21/GloSSAC_V2.21.nc')
 
     times = data.time.values
     years = times // 100
     months = times % 100
 
     # Extend the index to approximately now
-    num_months = 12 * (pd.datetime.now().year - years[0]) + pd.datetime.now().month
+    num_months = 12 * (pd.to_datetime('today').year - years[0]) + pd.to_datetime('today').month
     index = pd.date_range(pd.to_datetime(datetime(year=years[0], month=months[0], day=1)), periods=num_months, freq='M').to_period(freq='M')
 
     aod = data.sel(wavelengths_glossac=525)['Glossac_Aerosol_Optical_Depth'].values
@@ -363,7 +362,7 @@ def load_solar_mg2():
     data = pd.read_table(
         'http://www.iup.uni-bremen.de/gome/solar/MgII_composite.dat',
         delim_whitespace=True,
-        header=22,
+        skiprows=23,
         names=['year', 'month', 'day', 'index', 'error', 'id'],
         parse_dates={'time': [0, 1, 2]},
         index_col='time'
@@ -406,6 +405,7 @@ def load_orthogonal_eesc(filename):
     data /= data.std()
 
     return data
+
 
 if __name__ == "__main__":
     load_solar()
