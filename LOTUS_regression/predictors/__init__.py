@@ -122,6 +122,7 @@ def make_baseline_eesc():
 
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_eesc.csv'))
 
+
 def make_extra_predictors():
     pred = pd.DataFrame()
     pred['giss_aod'] = download.load_giss_aod()
@@ -136,10 +137,17 @@ def make_extra_predictors():
 
 
 if __name__ == "__main__":
-    make_extra_predictors()
-    make_baseline_pwlt()
+    #make_extra_predictors()
+    #print("made extra preds")
+    #make_baseline_pwlt()
+    #print("made baseline pwlt")
     make_baseline_ilt()
+    print("made baseline ilt")
     make_baseline_ilt(True)
+    print("made baseline ilt with True")
     make_baseline_ilt(False, True)
+    print("made baseline ilt with False, True")
     make_baseline_eesc()
+    print("made baseline eesc")
     remake_example_data()
+    print("remade example data")
