@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import requests
-import re
 import ftplib
 import xarray as xr
 import os
@@ -164,32 +163,16 @@ def load_qbo(pca=3):
 
 def load_solar():
     """
-    Gets the solar F10.7 from 'http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php'.
+    Gets the solar F10.7 from 'https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat'.
     """
-    sess = requests.session()
-    sess.get('https://omniweb.gsfc.nasa.gov/')
-
-    today = datetime.today()
-
-    page = sess.get('https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&res=daily&spacecraft=omni2_daily&start_date=19631128&end_date={}&vars=50&scale=Linear&ymin=&ymax=&charsize=&symsize=0.5&symbol=0&imagex=640&imagey=480'.format(today.strftime('%Y%M%d')))
-
-    # Won't have data for today, find the largest possible range
-    last_day = page.text[page.text.rindex('19631128 - ') + 11:page.text.rindex('19631128 - ') + 8 + 11]
-
-    page = sess.get('https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&res=daily&spacecraft=omni2_daily&start_date=19631128&end_date={}&vars=50&scale=Linear&ymin=&ymax=&charsize=&symsize=0.5&symbol=0&imagex=640&imagey=480'.format(last_day))
-
-    data = StringIO(page.text[page.text.rindex('YEAR'):page.text.rindex('<hr>')])
-
-    solar = pd.read_csv(data, delimiter='\s+')
-    solar = solar[:-1]
-
-    solar['dt'] = pd.to_datetime((solar['YEAR'].astype('int') * 1000) + solar['DOY'].astype(int), format='%Y%j')
-    solar = solar.set_index(keys='dt')
-    solar = solar.where(solar['1'] != 999.9)
-    solar = solar.drop(columns=['YEAR', 'DOY', 'HR'])
+    data = pd.read_table('https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat',
+                         header=None, delim_whitespace=True)
+    data.index = pd.to_datetime(data[0] * 1000 + data[1], format='%Y%j') + pd.to_timedelta(data[2], unit='h')
+    solar = pd.DataFrame(data[50]).rename(columns={50: 'f10.7'})
+    solar = solar.where(solar != 999.9)
     solar = solar.resample('MS').mean()
 
-    return solar['1'].rename('f10.7').to_period(freq='M')
+    return solar.to_period(freq='M')
 
 
 def load_trop(deseasonalize=True):

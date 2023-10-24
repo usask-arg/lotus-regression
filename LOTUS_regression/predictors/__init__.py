@@ -116,11 +116,12 @@ def make_baseline_eesc():
     pred -= pred.mean()
     pred /= pred.std()
 
-    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc(r'\\datastore\valhalla/data/LOTUS/proxies/EESC_Damadeo/eesc.txt')[['eesc_1', 'eesc_2']]
+    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc('/media/valhalla/LOTUS/proxies/EESC_Damadeo/EESC.txt')[['eesc_1', 'eesc_2']]
 
     pred['constant'] = np.ones(len(pred.index))
 
     pred.to_csv(os.path.join(os.path.dirname(__file__), 'data', 'pred_baseline_eesc.csv'))
+
 
 def make_extra_predictors():
     pred = pd.DataFrame()
