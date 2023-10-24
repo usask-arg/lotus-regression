@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOTUS_regression.regression &mdash; LOTUS Regression 0.8.1 documentation</title>
+  <title>LOTUS_regression.regression &mdash; LOTUS Regression 0.8.2 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/documentation_options.js?v=dbee5847"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -31,7 +31,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0.8.1
+                0.8.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -309,7 +309,9 @@
     <span class="k">return</span> <span class="n">correction_factors</span>
 
 
-<div class="viewcode-block" id="mzm_regression"><a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.mzm_regression">[docs]</a><span class="k">def</span> <span class="nf">mzm_regression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">do_autocorrelation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_heteroscedasticity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="mzm_regression">
+<a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.mzm_regression">[docs]</a>
+<span class="k">def</span> <span class="nf">mzm_regression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">do_autocorrelation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_heteroscedasticity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">extra_heteroscedasticity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heteroscedasticity_merged_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">seasonal_harmonics</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
                    <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -487,7 +489,10 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="regress_all_bins"><a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.regress_all_bins">[docs]</a><span class="k">def</span> <span class="nf">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">mzm_data</span><span class="p">,</span> <span class="n">time_field</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">post_fit_trend_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="regress_all_bins">
+<a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.regress_all_bins">[docs]</a>
+<span class="k">def</span> <span class="nf">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">mzm_data</span><span class="p">,</span> <span class="n">time_field</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">post_fit_trend_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">include_monthly_fits</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                      <span class="n">return_raw_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                      <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -696,6 +701,7 @@
         <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">raw_results</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">ret</span></div>
+
 </pre></div>
 
            </div>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Technical Note on the Baseline Regression Implementation &mdash; LOTUS Regression 0.8.1 documentation</title>
+  <title>Technical Note on the Baseline Regression Implementation &mdash; LOTUS Regression 0.8.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,9 +12,9 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/documentation_options.js?v=dbee5847"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -37,7 +37,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0.8.1
+                0.8.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -100,9 +100,9 @@
            <div itemprop="articleBody">
              
   <section id="Technical-Note-on-the-Baseline-Regression-Implementation">
-<h1>Technical Note on the Baseline Regression Implementation<a class="headerlink" href="#Technical-Note-on-the-Baseline-Regression-Implementation" title="Permalink to this heading">¶</a></h1>
+<h1>Technical Note on the Baseline Regression Implementation<a class="headerlink" href="#Technical-Note-on-the-Baseline-Regression-Implementation" title="Link to this heading">¶</a></h1>
 <section id="The-Regression-Model">
-<h2>The Regression Model<a class="headerlink" href="#The-Regression-Model" title="Permalink to this heading">¶</a></h2>
+<h2>The Regression Model<a class="headerlink" href="#The-Regression-Model" title="Link to this heading">¶</a></h2>
 <p>The general regression problem is written as,</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{y} = \mathbf{X}\beta + \epsilon\text{,}\]</div>
@@ -122,23 +122,23 @@
 <p>The covariance matrix is modified accordingly to account for measurement gaps (Savin and White, 1978). This procedure is repeated until the autocorrelation coefficient has converged within some tolerance level. The final error estimate is calculated by scaling <span class="math notranslate nohighlight">\(\mathbf{\Omega}\)</span> to match the observed variance of the residuals.</p>
 </section>
 <section id="Predictors/Configurations">
-<h2>Predictors/Configurations<a class="headerlink" href="#Predictors/Configurations" title="Permalink to this heading">¶</a></h2>
+<h2>Predictors/Configurations<a class="headerlink" href="#Predictors/Configurations" title="Link to this heading">¶</a></h2>
 <p>There are three standard configurations, the piecewise linear trend (PWLT), independent linear trend (ILT) and the EESC trend configuration. The regression procedure is the same for all configurations, the only difference is the predictors used in the model. Common to all of these baseline regression setups are a set of predictors intended to account for the natural variability of the measurements.</p>
 <ul class="simple">
-<li><p>Two orthogonal components of the QBO from <a class="reference external" href="http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat">http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat</a> which are calculated using principal component analysis</p></li>
-<li><p>Solar 10.7 cm flux from <a class="reference external" href="http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php">http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php</a></p></li>
+<li><p>Two orthogonal components of the QBO from <a class="reference external" href="https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt">https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt</a> which are calculated using principal component analysis</p></li>
+<li><p>Solar 10.7 cm flux from <a class="reference external" href="https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat">https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat</a></p></li>
 <li><p>ENSO without lag from <a class="reference external" href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">http://www.esrl.noaa.gov/psd/enso/mei/table.html</a></p></li>
 <li><p>GISS AOD from <a class="reference external" href="https://data.giss.nasa.gov/modelforce/strataer/">https://data.giss.nasa.gov/modelforce/strataer/</a> which is extended passed 2012 by extrapolating the last value</p></li>
 </ul>
 <p>For convenience all of these predictors have been scaled to have mean 0 and standard deviation 1.</p>
 <p><img alt="Default Predictors" src="_images/predictors_default.png" /> Figure 1 Standard predictors uses in all regression schemes.</p>
 <section id="Piecewise-Linear-Trends">
-<h3>Piecewise Linear Trends<a class="headerlink" href="#Piecewise-Linear-Trends" title="Permalink to this heading">¶</a></h3>
+<h3>Piecewise Linear Trends<a class="headerlink" href="#Piecewise-Linear-Trends" title="Link to this heading">¶</a></h3>
 <p>The piecewise linear trend consists of two predictors, the first being a linear increase until January 1997 and zero afterwards, and the second zero until January 1997 and a linear increase afterwards. The two predictors are both zero in January 1997 and are thus linked together. In addition an overall constant is added which shifts the value at the inflection point.</p>
 <p><img alt="PWLT Predictors" src="_images/predictors_pwlt.png" /> Figure 2 Predictors added for the piecewise linear trend scheme.</p>
 </section>
 <section id="Independent-Linear-Trends">
-<h3>Independent Linear Trends<a class="headerlink" href="#Independent-Linear-Trends" title="Permalink to this heading">¶</a></h3>
+<h3>Independent Linear Trends<a class="headerlink" href="#Independent-Linear-Trends" title="Link to this heading">¶</a></h3>
 <p>The independent linear trend is created using five predictors:</p>
 <ul class="simple">
 <li><p>A linear increase until January 1997 and zero afterwards</p></li>
@@ -151,13 +151,13 @@
 <p><img alt="ILT Predictors" src="_images/predictors_ilt.png" /> Figure 3 Predictors added for the independent linear trend scheme.</p>
 </section>
 <section id="Two-Orthogonal-EESC-Trends">
-<h3>Two Orthogonal EESC Trends<a class="headerlink" href="#Two-Orthogonal-EESC-Trends" title="Permalink to this heading">¶</a></h3>
+<h3>Two Orthogonal EESC Trends<a class="headerlink" href="#Two-Orthogonal-EESC-Trends" title="Link to this heading">¶</a></h3>
 <p>Here the overall trend in ozone is accounted for by including two orthogonal components of the EESC. The two components are calculated using principal component analysis on the EESC for different mean ages of air.</p>
 <p><img alt="EESC Predictors" src="_images/predictors_eesc.png" /> Figure 4 Predictors added for the EESC trend scheme.</p>
 </section>
 </section>
 <section id="References">
-<h2>References<a class="headerlink" href="#References" title="Permalink to this heading">¶</a></h2>
+<h2>References<a class="headerlink" href="#References" title="Link to this heading">¶</a></h2>
 <p>Cochrane, D., &amp; Orcutt, G. H. (1949). Application of least squares regression to relationships containing auto-correlated error terms. Journal of the American statistical association, 44(245), 32-61.</p>
 <p>Prais, S. J., &amp; Winsten, C. B. (1954). Trend estimators and serial correlation (Vol. 383, pp. 1-26). Chicago: Cowles Commission discussion paper.</p>
 <p>Savin, N. E., &amp; White, K. J. (1978). Testing for Autocorrelation with Missing observations. Econometrica (Pre-1986), 46(1), 59.</p>

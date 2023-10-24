@@ -32,6 +32,12 @@ Development
 -----------
 The model is open-source and can be found at https://github.com/usask-arg/lotus-regression
 
+What's New in Version 0.8.2
+---------------------------
+ * Updated the code to be compatible with the newest version of pandas
+ * Updated the QBO and F10.7 date sources
+ * Updated predictors to 2023-09
+
 What's New in Version 0.8.1
 ---------------------------
  * Development of the code has moved to github (https://github.com/usask-arg/lotus-regression)
