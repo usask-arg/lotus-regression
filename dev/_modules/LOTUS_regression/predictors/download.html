@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOTUS_regression.predictors.download &mdash; LOTUS Regression 0+untagged.1.ge19e228 documentation</title>
+  <title>LOTUS_regression.predictors.download &mdash; LOTUS Regression 0+untagged.1.g817407d documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../_static/documentation_options.js?v=3117a972"></script>
+        <script src="../../../_static/documentation_options.js?v=0ca948e5"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -31,7 +31,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.ge19e228
+                0+untagged.1.g817407d
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -87,7 +87,6 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">ftplib</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -267,32 +266,16 @@
 <a class="viewcode-back" href="../../../api_predictors.html#LOTUS_regression.predictors.download.load_solar">[docs]</a>
 <span class="k">def</span> <span class="nf">load_solar</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Gets the solar F10.7 from &#39;http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php&#39;.</span>
+<span class="sd">    Gets the solar F10.7 from &#39;https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">sess</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">session</span><span class="p">()</span>
-    <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://omniweb.gsfc.nasa.gov/&#39;</span><span class="p">)</span>
-
-    <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
-
-    <span class="n">page</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&amp;res=daily&amp;spacecraft=omni2_daily&amp;start_date=19631128&amp;end_date=</span><span class="si">{}</span><span class="s1">&amp;vars=50&amp;scale=Linear&amp;ymin=&amp;ymax=&amp;charsize=&amp;symsize=0.5&amp;symbol=0&amp;imagex=640&amp;imagey=480&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">today</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%M</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)))</span>
-
-    <span class="c1"># Won&#39;t have data for today, find the largest possible range</span>
-    <span class="n">last_day</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;19631128 - &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">11</span><span class="p">:</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;19631128 - &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">8</span> <span class="o">+</span> <span class="mi">11</span><span class="p">]</span>
-
-    <span class="n">page</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&amp;res=daily&amp;spacecraft=omni2_daily&amp;start_date=19631128&amp;end_date=</span><span class="si">{}</span><span class="s1">&amp;vars=50&amp;scale=Linear&amp;ymin=&amp;ymax=&amp;charsize=&amp;symsize=0.5&amp;symbol=0&amp;imagex=640&amp;imagey=480&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">last_day</span><span class="p">))</span>
-
-    <span class="n">data</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;YEAR&#39;</span><span class="p">):</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s1">&#39;&lt;hr&gt;&#39;</span><span class="p">)])</span>
-
-    <span class="n">solar</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">)</span>
-    <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">solar</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">((</span><span class="n">solar</span><span class="p">[</span><span class="s1">&#39;YEAR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">+</span> <span class="n">solar</span><span class="p">[</span><span class="s1">&#39;DOY&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y%j&#39;</span><span class="p">)</span>
-    <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
-    <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">solar</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">999.9</span><span class="p">)</span>
-    <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;YEAR&#39;</span><span class="p">,</span> <span class="s1">&#39;DOY&#39;</span><span class="p">,</span> <span class="s1">&#39;HR&#39;</span><span class="p">])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="s1">&#39;https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat&#39;</span><span class="p">,</span>
+                         <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y%j&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)</span>
+    <span class="n">solar</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">50</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">50</span><span class="p">:</span> <span class="s1">&#39;f10.7&#39;</span><span class="p">})</span>
+    <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">solar</span> <span class="o">!=</span> <span class="mf">999.9</span><span class="p">)</span>
     <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;MS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">solar</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;f10.7&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">solar</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span></div>
 
 
 

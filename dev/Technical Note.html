@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Technical Note on the Baseline Regression Implementation &mdash; LOTUS Regression 0+untagged.1.ge19e228 documentation</title>
+  <title>Technical Note on the Baseline Regression Implementation &mdash; LOTUS Regression 0+untagged.1.g817407d documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/nbsphinx-code-cells.css" type="text/css" />
@@ -12,7 +12,7 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/documentation_options.js?v=3117a972"></script>
+        <script src="_static/documentation_options.js?v=0ca948e5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -37,7 +37,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.ge19e228
+                0+untagged.1.g817407d
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -125,8 +125,8 @@
 <h2>Predictors/Configurations<a class="headerlink" href="#Predictors/Configurations" title="Link to this heading">¶</a></h2>
 <p>There are three standard configurations, the piecewise linear trend (PWLT), independent linear trend (ILT) and the EESC trend configuration. The regression procedure is the same for all configurations, the only difference is the predictors used in the model. Common to all of these baseline regression setups are a set of predictors intended to account for the natural variability of the measurements.</p>
 <ul class="simple">
-<li><p>Two orthogonal components of the QBO from <a class="reference external" href="http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat">http://www.geo.fu-berlin.de/met/ag/strat/produkte/qbo/qbo.dat</a> which are calculated using principal component analysis</p></li>
-<li><p>Solar 10.7 cm flux from <a class="reference external" href="http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php">http://www.spaceweather.ca/data-donnee/sol_flux/sx-5-mavg-eng.php</a></p></li>
+<li><p>Two orthogonal components of the QBO from <a class="reference external" href="https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt">https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt</a> which are calculated using principal component analysis</p></li>
+<li><p>Solar 10.7 cm flux from <a class="reference external" href="https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat">https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat</a></p></li>
 <li><p>ENSO without lag from <a class="reference external" href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">http://www.esrl.noaa.gov/psd/enso/mei/table.html</a></p></li>
 <li><p>GISS AOD from <a class="reference external" href="https://data.giss.nasa.gov/modelforce/strataer/">https://data.giss.nasa.gov/modelforce/strataer/</a> which is extended passed 2012 by extrapolating the last value</p></li>
 </ul>
