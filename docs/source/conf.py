@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # LOTUS Regression documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr  5 11:07:39 2017.
@@ -31,6 +29,12 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+from __future__ import annotations
+
+import sphinx_rtd_theme
+
+import LOTUS_regression
+
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
@@ -65,7 +69,6 @@ author = 'USask ARG and the LOTUS Group'
 # built documents.
 #
 # The short X.Y version.
-import LOTUS_regression
 
 version = LOTUS_regression.__version__
 # The full version, including alpha/beta/rc tags.
@@ -95,7 +98,6 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-import sphinx_rtd_theme
 
 html_theme = "sphinx_rtd_theme"
 
@@ -168,6 +170,3 @@ texinfo_documents = [
      author, 'LOTUSRegression', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
