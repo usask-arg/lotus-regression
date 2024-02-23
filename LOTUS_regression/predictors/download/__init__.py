@@ -171,7 +171,6 @@ def load_solar():
     solar = pd.DataFrame(data[50]).rename(columns={50: 'f10.7'})
     solar = solar.where(solar != 999.9)
     solar = solar.resample('MS').mean()
-
     return solar.to_period(freq='M')
 
 
