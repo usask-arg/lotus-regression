@@ -30,7 +30,7 @@ jobs:
 
       - name: build wheels
         run: |
-          python setup.py bdist_wheel
+          python -m pip wheel
 
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
@@ -57,7 +57,7 @@ jobs:
       - name: Test package
         shell: bash -el {0}
         run: |
-          python setup.py install
+          pip install .
           py.test
 
   build-docs:
@@ -81,7 +81,7 @@ jobs:
       - name: Build Sphinx Docs
         shell: bash -el {0}
         run: |
-          python setup.py install
+          pip install .
           cd docs
           mkdir -p source/images
           python make_regression_images.py
