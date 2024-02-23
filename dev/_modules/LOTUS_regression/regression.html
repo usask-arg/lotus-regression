@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOTUS_regression.regression &mdash; LOTUS Regression 0+untagged.1.ge13a272 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=4149688a"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            LOTUS Regression
+          </a>
+              <div class="version">
+                0+untagged.1.ge13a272
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Technical%20Note.html">Technical Note on the Baseline Regression Implementation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/GOZCARDS%20Trends.html">Trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/GOZCARDS%20Trends%20Seasonal.html">Seasonal trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/Sage%20II-OSIRIS-OMPS-LP%20Trends.html">Trends with the SAGE II / OSIRIS / OMPS-LP Dataset</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/Predictors.html">Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/Predictors.html#Extra-Predictors">Extra Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/SingleBin.html">Running the Regression for a Single Bin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/Changing%20the%20Linear%20Components.html">Changing the Linear Components</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">LOTUS Regression</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">LOTUS_regression.regression</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for LOTUS_regression.regression</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">import</span> <span class="nn">statsmodels</span>
+
+
+<span class="k">def</span> <span class="nf">_corrected_ar1_covariance</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">gaps</span><span class="p">,</span> <span class="n">rho</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the corrected covariance matrix accounting for AR1 structure, this is the Prais and Winsten covariance</span>
+<span class="sd">    structure with a modification by Savin and White (1978) to account for gaps in the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sigma : np.array</span>
+<span class="sd">        Length n, square root of the diagonal elements of the uncorrected covariance matrix</span>
+<span class="sd">    gaps : Iterable of tuples</span>
+<span class="sd">        Each element of gaps must be a tuple containing a length and index field.  index is the location where the gap</span>
+<span class="sd">        occurs and length is the number of elements in the gap</span>
+<span class="sd">    rho : float</span>
+<span class="sd">        AR1 autocorrelation parameter</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Covariance matrix (n, n) which accounts for the AR1 structure</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">sigma</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigma</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sigma</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">G</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">rho</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">G</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">G</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">rho</span>
+
+    <span class="k">if</span> <span class="n">gaps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">gap</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">index</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigma</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">gap</span><span class="o">.</span><span class="n">length</span>
+
+            <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">rho</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">rho</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="o">+</span><span class="mi">2</span><span class="p">)))</span>
+
+            <span class="n">G</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span>
+            <span class="n">G</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">g</span><span class="o">*</span><span class="n">rho</span><span class="o">**</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">covar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="n">covar</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">covar</span>
+
+
+<span class="k">def</span> <span class="nf">_remove_nans_and_find_gaps</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Preprocesses the data by removing NaN&#39;s and in the process finds gaps in the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : np.ndarray</span>
+<span class="sd">        (nsamples, npredictors)  predictor matrix</span>
+<span class="sd">    Y : np.array</span>
+<span class="sd">        (nsamples) observations</span>
+<span class="sd">    sigma : np.array</span>
+<span class="sd">        (nsamples) Square root of the diagonal elements of the covariance matrix for Y</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X : np.ndarray</span>
+
+<span class="sd">    Y : np.array</span>
+
+<span class="sd">    sigma : np.array</span>
+
+<span class="sd">    gaps : Iterable tuple</span>
+
+<span class="sd">    good_index :</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Gap</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Gap&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">])</span>
+
+    <span class="n">good_data</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">Y_fixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">good_data</span><span class="p">)))</span>
+
+    <span class="n">gaps</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Y is a little tricky because the index constantly changes, have i go over Y and i_yfix go over Y_fixed</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">i_yfix</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">gap_start</span> <span class="o">=</span> <span class="n">i</span>
+
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">gap_end</span> <span class="o">=</span> <span class="n">i</span>
+
+            <span class="n">gaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gap</span><span class="p">(</span><span class="n">gap_end</span> <span class="o">-</span> <span class="n">gap_start</span><span class="p">,</span> <span class="n">i_yfix</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">i_yfix</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_fixed</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="n">Y_fixed</span><span class="p">[</span><span class="n">i_yfix</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">i_yfix</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="n">good_data</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Y_fixed</span><span class="p">,</span> <span class="n">sigma</span><span class="p">[</span><span class="n">good_data</span><span class="p">],</span> <span class="n">gaps</span><span class="p">,</span> <span class="n">good_data</span>
+
+
+<span class="k">def</span> <span class="nf">_heteroscedasticity_fit_values</span><span class="p">(</span><span class="n">num_resid</span><span class="p">,</span> <span class="n">seasonal_harmonics</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">extra_predictors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                   <span class="n">merged_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">treat_merged_periods_differently</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num_resid : int</span>
+<span class="sd">        number of residuals</span>
+<span class="sd">    seasonal_harmonics : tuple, optional</span>
+<span class="sd">        Default is (3,4,6,12), these are the harmonics used to create the seasonal predictors.  sins and cosines are used</span>
+<span class="sd">        as predictor</span>
+<span class="sd">    extra_predictors : np.ndarray</span>
+<span class="sd">        (nsamples, x) adds extra predictors to be used in addition to the sins and cosines.</span>
+
+<span class="sd">    merged_flag : np.array, optional</span>
+<span class="sd">        Flag indicating different &#39;modes&#39; of the merged dataset. For example, this flag is commonly used to describe</span>
+<span class="sd">        different instaument time periods in a merged dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">month_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_resid</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">merged_flag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unique_modes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">merged_flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_resid</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unique_modes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">merged_flag</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">treat_merged_periods_differently</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_resid</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">idy</span><span class="p">,</span> <span class="n">mode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">):</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">merged_flag</span> <span class="o">==</span> <span class="n">mode</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">harmonic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">):</span>
+                <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="o">*</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="n">idy</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">month_index</span> <span class="o">/</span> <span class="n">harmonic</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
+                <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="o">*</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="n">idy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">month_index</span> <span class="o">/</span> <span class="n">harmonic</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Multiple modes, add constants to allow for varying weights between modes</span>
+            <span class="n">X_constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_resid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">idy</span><span class="p">,</span> <span class="n">mode</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">):</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">merged_flag</span> <span class="o">==</span> <span class="n">mode</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+                <span class="n">X_constants</span><span class="p">[:,</span> <span class="n">idy</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">X_constants</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">num_bits</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_bits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">))))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_resid</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_bits</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bits</span><span class="p">):</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">((</span><span class="n">merged_flag</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="o">**</span><span class="n">bit</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">harmonic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">):</span>
+                <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="o">*</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="n">bit</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">month_index</span> <span class="o">/</span> <span class="n">harmonic</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
+                <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="o">*</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seasonal_harmonics</span><span class="p">)</span> <span class="o">*</span> <span class="n">bit</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">month_index</span> <span class="o">/</span> <span class="n">harmonic</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_modes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Multiple modes, add constants to allow for varying weights between modes</span>
+            <span class="n">X_constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_resid</span><span class="p">,</span> <span class="n">num_bits</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bits</span><span class="p">):</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="p">((</span><span class="n">merged_flag</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">bit</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+                <span class="n">X_constants</span><span class="p">[:,</span> <span class="n">bit</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">X_constants</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">extra_predictors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">extra_predictors</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">X</span>
+
+
+<span class="k">def</span> <span class="nf">_heteroscedasticity_correction_factors</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">fit_functions</span><span class="p">,</span> <span class="n">log_space</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">damping</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the heteroscedasticity correction factors outlined in Damadeo et al. 2014.  This is done by fitting</span>
+<span class="sd">    log(residual^2) to a set of predictors. Ideally the residuals should be completely random and thus these fit values</span>
+<span class="sd">    are 0, however that is not usually the case in practice.  The calculated correction factors can vary greatly based</span>
+<span class="sd">    on the set of predictors used.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    residual : np.array</span>
+<span class="sd">        (nsamples) residuals of the fit.  Note that these are the residuals under the transformed variables of the GLS,</span>
+<span class="sd">        i.e., including the autocorrelation correction done.</span>
+
+<span class="sd">    fit_functions : np.ndarray</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Multiplicative correction factors to be applied to the square root of the diagonal elements of the covariance</span>
+<span class="sd">    matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">residual</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">if</span> <span class="n">log_space</span><span class="p">:</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">fit_functions</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">fittedvalues</span>
+    <span class="k">if</span> <span class="n">log_space</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">correction_factors</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">damping</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># Sometimes we can get values really close to 0, so dont let the weights change by more than 2 orders of magnitude</span>
+    <span class="n">correction_factors</span><span class="p">[</span><span class="n">correction_factors</span> <span class="o">&lt;=</span> <span class="mf">1e-2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-2</span>
+    <span class="n">correction_factors</span><span class="p">[</span><span class="n">correction_factors</span> <span class="o">&gt;=</span> <span class="mf">1e2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e2</span>
+
+    <span class="k">return</span> <span class="n">correction_factors</span>
+
+
+<div class="viewcode-block" id="mzm_regression">
+<a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.mzm_regression">[docs]</a>
+<span class="k">def</span> <span class="nf">mzm_regression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">do_autocorrelation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_heteroscedasticity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">extra_heteroscedasticity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heteroscedasticity_merged_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">seasonal_harmonics</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
+                   <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">ilt_predictor_index_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs the regression for a single bin.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : np.ndarray</span>
+<span class="sd">        (nsamples, npredictors) Array of predictor basis functions</span>
+<span class="sd">    Y : np.array</span>
+<span class="sd">        (nsamples) Observations</span>
+<span class="sd">    sigma : np.array</span>
+<span class="sd">        (nsamples) Square root of the diagonal elements of the covariance matrix for Y</span>
+<span class="sd">    tolerance : float, optional</span>
+<span class="sd">        Iterations stop when the relative difference in the AR1 coefficient is less than this threshold.  Default 1e-2</span>
+<span class="sd">    max_iter : int, optional</span>
+<span class="sd">        Maximum number of iterations to perform.  Default 50</span>
+<span class="sd">    do_autocorrelation : bool, optional</span>
+<span class="sd">        If true, do the AR1 autocorrelation correction on the covariance matrix.  Default True.</span>
+<span class="sd">    do_heteroscedasticity : bool, optional</span>
+<span class="sd">        If True, do the heteroscedasticity correction on the covariance matrix.  Default False.</span>
+<span class="sd">    extra_heteroscedasticity : np.ndarray, optional</span>
+<span class="sd">        (nsamples, nextrapredictors) Extra predictor functions to use in the heteroscedasticity correction.</span>
+<span class="sd">    heteroscedasticity_merged_flag : np.ndarray, optional</span>
+<span class="sd">        (nsamples) A flag indicating time periods that should be treated independently in the heteroscedasticity</span>
+<span class="sd">        correction.  E.g. this could be something like [0, 0, 0, 0, 2, 2, 2, 1, 1, 1] which would create 3</span>
+<span class="sd">        independant time periods where the heteroscedasticity correction is applied.</span>
+<span class="sd">    seasonal_harmonics : Iterable Float, optional.  Default (3, 4, 6, 12)</span>
+<span class="sd">        The monthly harmonics to use in the heteroscedasticity correction.</span>
+<span class="sd">    constrain_ilt_gap : bool, optional. Default False.</span>
+<span class="sd">        If true then a constraint is added so that the ILT terms in the gap period enforce continuity.  This must be</span>
+<span class="sd">        set in conjunction with ilt_predictor_index_dict</span>
+<span class="sd">    ilt_predictor_index_dict : dict, optional. Default None.</span>
+<span class="sd">        If using constrain_ilt_gap, this must be a dictionary {predictor_name: index_in X} which contains the indicies</span>
+<span class="sd">        of the predictors &#39;gap_cons&#39;, &#39;pre_const&#39;, &#39;post_const&#39;, &#39;gap_linear&#39;, &#39;linear_pre&#39;, &#39;linear_post&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results : dict</span>
+<span class="sd">        a dictionary of outputs with keys:</span>
+<span class="sd">        ``gls_results``</span>
+<span class="sd">            The raw regression output.  This is an instance of `RegressionResults` which is documented at</span>
+<span class="sd">            http://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.RegressionResults.html</span>
+<span class="sd">        ``residual``</span>
+<span class="sd">            Residuals of the fit in the original coordinate system.</span>
+<span class="sd">        ``transformed_residuals``</span>
+<span class="sd">            Residuals of the fit in the GLS transformed coordinates.</span>
+<span class="sd">        ``autocorrelation``</span>
+<span class="sd">            The AR1 correlation constant.</span>
+<span class="sd">        ``numiter``</span>
+<span class="sd">            Number of iterative steps performed.</span>
+<span class="sd">        ``covariance``</span>
+<span class="sd">            Calculated covariance of Y that is input to the GLS model.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If we have no weights then still do a weighted regression but use sigma=1</span>
+    <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># Set up some output variables, we want the output to be the same shape as the input but we have to preprocess the</span>
+    <span class="c1"># input and remove NaN&#39;s</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">fit_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">transformed_residuals_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">sigma_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># Do some preprocessing</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">gaps</span><span class="p">,</span> <span class="n">good_index</span> <span class="o">=</span> <span class="n">_remove_nans_and_find_gaps</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">extra_heteroscedasticity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">extra_heteroscedasticity</span> <span class="o">=</span> <span class="n">extra_heteroscedasticity</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">heteroscedasticity_merged_flag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">heteroscedasticity_merged_flag</span> <span class="o">=</span> <span class="n">heteroscedasticity_merged_flag</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">do_heteroscedasticity</span><span class="p">:</span>
+        <span class="n">heteroscedasticity_X</span> <span class="o">=</span> <span class="n">_heteroscedasticity_fit_values</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span> <span class="n">extra_predictors</span><span class="o">=</span><span class="n">extra_heteroscedasticity</span><span class="p">,</span> <span class="n">merged_flag</span><span class="o">=</span><span class="n">heteroscedasticity_merged_flag</span><span class="p">,</span>
+                                                              <span class="n">treat_merged_periods_differently</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                              <span class="n">seasonal_harmonics</span><span class="o">=</span><span class="n">seasonal_harmonics</span><span class="p">)</span>
+
+    <span class="c1"># Initial covariance matrix for the GLS with diagonal structure</span>
+    <span class="n">covar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Set up some variables for convergence testing, funny value but |rho| has to be less than one so this should be</span>
+    <span class="c1"># okay</span>
+    <span class="n">rho_prior</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10000</span>
+
+    <span class="c1"># Output</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="c1"># Main loop</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
+        <span class="c1"># GLS Model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">GLS</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">covar</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">constrain_ilt_gap</span><span class="p">:</span>
+            <span class="n">model_glm</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">GLM</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wendog</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">wexog</span><span class="p">)</span>
+            <span class="n">gap_const</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">exog</span><span class="p">[:,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;gap_cons&#39;</span><span class="p">]]</span>
+            <span class="n">start_x_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">gap_const</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">end_x_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">gap_const</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">constraint_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">constraint_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># first continuity constraint is at start index, gap_const = pre_const</span>
+
+            <span class="n">constraint_R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;gap_cons&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">constraint_R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;pre_const&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">constraint_q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># Second continuity constraint is at the end index, gap_const + gap_linear = post_const</span>
+            <span class="n">constraint_R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;gap_cons&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">constraint_R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;gap_linear&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">exog</span><span class="p">[</span><span class="n">end_x_index</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;gap_linear&#39;</span><span class="p">]]</span>
+            <span class="n">constraint_R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">ilt_predictor_index_dict</span><span class="p">[</span><span class="s1">&#39;post_const&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">constraint_q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">results</span> <span class="o">=</span> <span class="n">model_glm</span><span class="o">.</span><span class="n">fit_constrained</span><span class="p">((</span><span class="n">constraint_R</span><span class="p">,</span> <span class="n">constraint_q</span><span class="p">))</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">resid</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">wendog</span> <span class="o">-</span> <span class="n">results</span><span class="o">.</span><span class="n">fittedvalues</span><span class="p">)</span>
+
+        <span class="c1"># Find the autocorrelation coefficient, if we are not doing autocorrelation set rho to 0 so that later our</span>
+        <span class="c1"># variable transformations are still valid</span>
+        <span class="k">if</span> <span class="n">do_autocorrelation</span><span class="p">:</span>
+            <span class="n">rho</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">regression</span><span class="o">.</span><span class="n">yule_walker</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rho</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Find the residuals in the &quot;transformed&quot; GLS units.</span>
+        <span class="n">transformed_residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">resid</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">cholsigmainv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">do_heteroscedasticity</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">correction_factors</span> <span class="o">=</span> <span class="n">_heteroscedasticity_correction_factors</span><span class="p">(</span><span class="n">transformed_residuals</span><span class="p">,</span> <span class="n">heteroscedasticity_X</span><span class="p">,</span>
+                                                                        <span class="n">log_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">*=</span> <span class="n">correction_factors</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">do_autocorrelation</span><span class="p">:</span>
+                <span class="c1"># If we arent doing autocorrelation we have to reset the covariance matrix, if we are this will be done</span>
+                <span class="c1"># in the next step</span>
+                <span class="n">covar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">do_autocorrelation</span><span class="p">:</span>
+            <span class="n">covar</span> <span class="o">=</span> <span class="n">_corrected_ar1_covariance</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">gaps</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">do_autocorrelation</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">do_heteroscedasticity</span><span class="p">:</span>
+            <span class="c1"># There is nothing here to iterate,</span>
+            <span class="k">break</span>
+        <span class="c1"># If converged we can stop</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">rho</span> <span class="o">-</span> <span class="n">rho_prior</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">tolerance</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">do_heteroscedasticity</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">correction_factors</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rho_prior</span> <span class="o">=</span> <span class="n">rho</span>
+
+    <span class="n">residuals</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">resid</span>
+    <span class="n">fit_values</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">fittedvalues</span>
+
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;residual&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">residuals</span>
+
+    <span class="k">if</span> <span class="n">do_autocorrelation</span><span class="p">:</span>
+        <span class="n">transformed_residuals_out</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">transformed_residuals</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;transformed_residuals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transformed_residuals_out</span>
+
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;autocorrelation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span>
+
+    <span class="n">sigma_out</span><span class="p">[</span><span class="n">good_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;corrected_weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma_out</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;numiter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;fit_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fit_values</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;covariance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">covar</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+
+<div class="viewcode-block" id="regress_all_bins">
+<a class="viewcode-back" href="../../api_regression.html#LOTUS_regression.regression.regress_all_bins">[docs]</a>
+<span class="k">def</span> <span class="nf">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">mzm_data</span><span class="p">,</span> <span class="n">time_field</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">post_fit_trend_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">include_monthly_fits</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">return_raw_results</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs the regression for a dataset in all bins.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    predictors : pd.Dataframe</span>
+<span class="sd">        Dataframe of predictors to use in the regression.  Index should be a time field.</span>
+
+<span class="sd">    mzm_data : xr.DataArray</span>
+<span class="sd">        DataArray containing the monthly zonal mean data in a variety of bins.  The data should be three dimensional</span>
+<span class="sd">        with one dimension representing time.  The other two dimensions are typically latitude and a vertical coordinate.</span>
+
+<span class="sd">    time_field : string</span>
+<span class="sd">        Name of the time field in the mzm_data structure</span>
+
+<span class="sd">    sigma : xr.DataArray, optional.  Default None</span>
+<span class="sd">        If not None then the regression is weighted as if sigma is the standard deviation of mzm_data.  Should be in the</span>
+<span class="sd">        same format as mzm_data.</span>
+
+<span class="sd">    post_fit_trend_start : datetimelike, optional. Default None</span>
+<span class="sd">        If set to a datetime like object (example: &#39;2000-01-01&#39;) then a linear trend is post fit to the residuals with</span>
+<span class="sd">        the specified start date.  If this is set you should not include a linear term in the predictors or the</span>
+<span class="sd">        results will not be valid</span>
+
+<span class="sd">    constrain_ilt_gap: bool, optional. Default False</span>
+<span class="sd">        If True then a constraint is added to the regression so that the fit terms in the gap period maintain</span>
+<span class="sd">        continunity when doing ILT trends.  The predictors must have keys &#39;gap_cons&#39;, &#39;post_const&#39;, &#39;pre_const&#39;,</span>
+<span class="sd">        &#39;linear_pre&#39;, &#39;linear_post&#39;, and &#39;gap_linear&#39; for this option to work.  This is the standard case when using</span>
+<span class="sd">        the &#39;predictors_baseline_ilt_linear_gap&#39; file.</span>
+
+<span class="sd">    kwargs</span>
+<span class="sd">        Other arguments passed to mzm_regression</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xr.Dataset</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mzm_data</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">time_field</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">})</span>
+
+    <span class="n">mzm_data</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+                                <span class="n">tolerance</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+
+    <span class="n">min_time</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">max_time</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">min_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">min_time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">post_fit_trend_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">post_fit_time_index</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">post_fit_trend_start</span><span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">post_fit_time_index</span><span class="p">]</span>
+
+        <span class="c1"># Doesn&#39;t account for leap years</span>
+        <span class="n">X_post_fit_trend</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">10</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">365</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+
+        <span class="n">X_post_fit_trend</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">X_post_fit_trend</span><span class="p">)</span>
+
+        <span class="n">X_post_fit_trend</span> <span class="o">=</span> <span class="n">X_post_fit_trend</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">X_post_fit_trend</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X_post_fit_trend</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">min_time</span><span class="o">.</span><span class="n">day</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">min_time</span> <span class="o">-=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictors</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">):</span>
+        <span class="n">tstamp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">predictors</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tstamp</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_timestamp</span><span class="p">()</span>
+
+    <span class="n">predictors</span> <span class="o">=</span> <span class="n">predictors</span><span class="p">[(</span><span class="n">tstamp</span> <span class="o">&gt;=</span> <span class="n">min_time</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tstamp</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">)]</span>
+    <span class="n">pred_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">predictors</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="n">seasonal_comp_info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">include_monthly_fits</span><span class="p">:</span>
+        <span class="c1"># Find the predictors with seasonal components</span>
+        <span class="n">seasonal_comps</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">pred_list</span> <span class="k">if</span> <span class="s1">&#39;sin0&#39;</span> <span class="ow">in</span> <span class="n">a</span> <span class="ow">or</span> <span class="s1">&#39;cos0&#39;</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+        <span class="n">seasonal_comps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seasonal_comps</span><span class="p">]))</span>
+
+        <span class="n">days</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;1997-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;1997-12-01&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;MS&#39;</span><span class="p">)</span>
+        <span class="n">day_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">days</span><span class="o">.</span><span class="n">dayofyear</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">365.25</span>
+
+        <span class="k">for</span> <span class="n">seasonal_comp</span> <span class="ow">in</span> <span class="n">seasonal_comps</span><span class="p">:</span>
+            <span class="n">num_comp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">len</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">pred_list</span> <span class="k">if</span> <span class="n">seasonal_comp</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">][</span><span class="s1">&#39;num_component&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_comp</span>
+
+            <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">][</span><span class="s1">&#39;pred_matrix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_list</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">day_factor</span><span class="p">)))</span>
+
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_comp</span><span class="p">):</span>
+                <span class="n">cos_idx</span> <span class="o">=</span> <span class="n">pred_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">seasonal_comp</span> <span class="o">+</span> <span class="s1">&#39;_cos</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+                <span class="n">sin_idx</span> <span class="o">=</span> <span class="n">pred_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">seasonal_comp</span> <span class="o">+</span> <span class="s1">&#39;_sin</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+                <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">][</span><span class="s1">&#39;pred_matrix&#39;</span><span class="p">][</span><span class="n">cos_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">day_factor</span> <span class="o">*</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">][</span><span class="s1">&#39;pred_matrix&#39;</span><span class="p">][</span><span class="n">sin_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">day_factor</span> <span class="o">*</span> <span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">const_idx</span> <span class="o">=</span> <span class="n">pred_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">seasonal_comp</span><span class="p">)</span>
+            <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">seasonal_comp</span><span class="p">][</span><span class="s1">&#39;pred_matrix&#39;</span><span class="p">][</span><span class="n">const_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictors</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mzm_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Input predictors do not cover the full time period&#39;</span><span class="p">)</span>
+
+    <span class="c1"># (nsamples, npredictors) matrix</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">predictors</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">c_list</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">mzm_data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">}</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">c_list</span><span class="p">)</span>
+
+    <span class="n">sized_nans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">mzm_data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">include_monthly_fits</span><span class="p">:</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">12.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">pred_list</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">pred</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">copy</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">))</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">pred</span> <span class="o">+</span> <span class="s2">&quot;_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">copy</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">seasonal_comp_info</span><span class="p">:</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">pred</span> <span class="o">+</span> <span class="s1">&#39;_monthly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">[:,</span> <span class="p">:,</span>  <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="mi">12</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">pred</span> <span class="o">+</span> <span class="s1">&#39;_monthly_std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">[:,</span> <span class="p">:,</span>  <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="mi">12</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">post_fit_trend_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;linear_post&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">copy</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">))</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;linear_post&#39;</span> <span class="o">+</span> <span class="s2">&quot;_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">copy</span><span class="p">(</span><span class="n">sized_nans</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">return_raw_results</span><span class="p">:</span>
+        <span class="n">raw_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">mzm_data</span><span class="p">[</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mzm_data</span><span class="p">[</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">statsmodels</span><span class="o">.</span><span class="n">regression</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">RegressionResultsWrapper</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">constrain_ilt_gap</span><span class="p">:</span>
+        <span class="n">necessary_predictors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gap_cons&#39;</span><span class="p">,</span> <span class="s1">&#39;pre_const&#39;</span><span class="p">,</span> <span class="s1">&#39;post_const&#39;</span><span class="p">,</span> <span class="s1">&#39;linear_pre&#39;</span><span class="p">,</span> <span class="s1">&#39;linear_post&#39;</span><span class="p">,</span> <span class="s1">&#39;gap_linear&#39;</span><span class="p">]</span>
+        <span class="n">constrain_index_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">necessary_predictors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pred</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred_list</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;When using constrain_ilt_gap the predictors must contain gap_cons, pre_const, post_const, linear_pre, linear_post, and gap_linear.&#39;</span><span class="p">)</span>
+            <span class="n">constrain_index_dict</span><span class="p">[</span><span class="n">pred</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">constrain_index_dict</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">id_x</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mzm_data</span><span class="p">[</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">id_y</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mzm_data</span><span class="p">[</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+
+            <span class="n">sliced_data</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[{</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">x</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">y</span><span class="p">}]</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">sliced_data</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">sigma_bin</span> <span class="o">=</span> <span class="n">sigma</span><span class="o">.</span><span class="n">loc</span><span class="p">[{</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">x</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">y</span><span class="p">}]</span><span class="o">.</span><span class="n">values</span>
+                <span class="k">if</span> <span class="n">post_fit_trend_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">sigma_post_fit</span> <span class="o">=</span> <span class="n">sigma_bin</span><span class="p">[</span><span class="n">post_fit_time_index</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigma_bin</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">post_fit_trend_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">sigma_post_fit</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">mzm_regression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_bin</span><span class="p">,</span> <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="n">constrain_ilt_gap</span><span class="p">,</span>
+                                        <span class="n">ilt_predictor_index_dict</span><span class="o">=</span><span class="n">constrain_index_dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">std_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cov_params</span><span class="p">()))</span>
+
+                <span class="k">if</span> <span class="n">return_raw_results</span><span class="p">:</span>
+                    <span class="n">raw_results</span><span class="p">[</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred_list</span><span class="p">):</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;_std&#39;</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">std_error</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">seasonal_comp_info</span><span class="p">:</span>
+                        <span class="n">ret</span><span class="p">[</span><span class="n">col</span>  <span class="o">+</span> <span class="s1">&#39;_monthly&#39;</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="s1">&#39;pred_matrix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">params</span>
+                        <span class="n">ret</span><span class="p">[</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;_monthly_std&#39;</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">col</span><span class="p">][</span>
+                            <span class="s1">&#39;pred_matrix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cov_params</span><span class="p">()</span> <span class="o">@</span> <span class="n">seasonal_comp_info</span><span class="p">[</span><span class="n">col</span><span class="p">][</span>
+                            <span class="s1">&#39;pred_matrix&#39;</span><span class="p">]))</span>
+
+                <span class="k">if</span> <span class="n">post_fit_trend_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">Y_post_fit</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;residual&#39;</span><span class="p">][</span><span class="n">post_fit_time_index</span><span class="p">]</span>
+
+                    <span class="c1"># If we did the initial fit with linear terms or the EESC we need to add these back in to the</span>
+                    <span class="c1"># residuals</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred_list</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="s1">&#39;linear&#39;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s1">&#39;eesc&#39;</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                            <span class="n">contrib</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="n">post_fit_time_index</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span>
+                            <span class="n">Y_post_fit</span> <span class="o">+=</span> <span class="n">contrib</span>
+
+                    <span class="n">Y_post_fit</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">Y_post_fit</span><span class="p">)</span>
+
+                    <span class="n">post_fit_output</span> <span class="o">=</span> <span class="n">mzm_regression</span><span class="p">(</span><span class="n">X_post_fit_trend</span><span class="p">,</span> <span class="n">Y_post_fit</span><span class="p">,</span> <span class="n">sigma_post_fit</span><span class="p">,</span> <span class="n">do_autocorrelation</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;do_autocorrelation&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                                                     <span class="n">constrain_ilt_gap</span><span class="o">=</span><span class="n">constrain_ilt_gap</span><span class="p">,</span>
+                                                     <span class="n">ilt_predictor_index_dict</span><span class="o">=</span><span class="n">constrain_index_dict</span><span class="p">)</span>
+                    <span class="n">std_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">post_fit_output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cov_params</span><span class="p">()))</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;linear_post&#39;</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">post_fit_output</span><span class="p">[</span><span class="s1">&#39;gls_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;linear_post_std&#39;</span><span class="p">][</span><span class="n">id_x</span><span class="p">,</span> <span class="n">id_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">std_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_raw_results</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">raw_results</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Note on the Baseline Regression Implementation &mdash; LOTUS Regression 0+untagged.1.ge13a272 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=4149688a"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Trends with the GOZCARDS Dataset" href="examples/GOZCARDS%20Trends.html" />
+    <link rel="prev" title="LOTUS Regression" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LOTUS Regression
+          </a>
+              <div class="version">
+                0+untagged.1.ge13a272
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Technical Note on the Baseline Regression Implementation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#The-Regression-Model">The Regression Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Predictors/Configurations">Predictors/Configurations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Piecewise-Linear-Trends">Piecewise Linear Trends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Independent-Linear-Trends">Independent Linear Trends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Two-Orthogonal-EESC-Trends">Two Orthogonal EESC Trends</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/GOZCARDS%20Trends.html">Trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/GOZCARDS%20Trends%20Seasonal.html">Seasonal trends with the GOZCARDS Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Sage%20II-OSIRIS-OMPS-LP%20Trends.html">Trends with the SAGE II / OSIRIS / OMPS-LP Dataset</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/Predictors.html">Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Predictors.html#Extra-Predictors">Extra Predictors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/SingleBin.html">Running the Regression for a Single Bin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/Changing%20the%20Linear%20Components.html">Changing the Linear Components</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LOTUS Regression</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Technical Note on the Baseline Regression Implementation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Technical Note.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Technical-Note-on-the-Baseline-Regression-Implementation">
+<h1>Technical Note on the Baseline Regression Implementation<a class="headerlink" href="#Technical-Note-on-the-Baseline-Regression-Implementation" title="Link to this heading">¶</a></h1>
+<section id="The-Regression-Model">
+<h2>The Regression Model<a class="headerlink" href="#The-Regression-Model" title="Link to this heading">¶</a></h2>
+<p>The general regression problem is written as,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{y} = \mathbf{X}\beta + \epsilon\text{,}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{y}\)</span> is the length <span class="math notranslate nohighlight">\(n\)</span> vector of observations, <span class="math notranslate nohighlight">\(\beta\)</span> is the length <span class="math notranslate nohighlight">\(m\)</span> vector of predictor coefficients, <span class="math notranslate nohighlight">\(\mathbf{X}\)</span> is the <span class="math notranslate nohighlight">\(n\times m\)</span> matrix of predictors, and <span class="math notranslate nohighlight">\(\epsilon\)</span> are the residuals. The goal of the regression is to find the values of <span class="math notranslate nohighlight">\(\beta\)</span> which minimize the quantity</p>
+<div class="math notranslate nohighlight">
+\[(\mathbf{y} - \mathbf{X}\beta)^T\mathbf{\Omega}^{-1}(\mathbf{y} -\mathbf{X}\beta)\text{,}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{\Omega}\)</span> is the covariance of the observations. The problem admits a direct solution,</p>
+<div class="math notranslate nohighlight">
+\[\beta = (\mathbf{X}^T \Omega^{-1} \mathbf{X})^{-1} \mathbf{X}^T \mathbf{\Omega}^{-1} \mathbf{y}\text{,}\]</div>
+<p>which can also be used to obtain an error estimate of <span class="math notranslate nohighlight">\(\beta\)</span>, assuming <span class="math notranslate nohighlight">\(\mathbf{\Omega}\)</span> is correctly specified.</p>
+<p>The regression is performed in an iterative procedure (Cochrane and Orcutt, 1949) with <span class="math notranslate nohighlight">\(\mathbf{\Omega}\)</span> set to unity for the first iteration. The first iteration is equivalent to unweighted ordinary least squares. After the first iteration the autocorrelation coefficient, <span class="math notranslate nohighlight">\(\rho\)</span>, is calculated through,</p>
+<div class="math notranslate nohighlight">
+\[\rho = \frac{\sum_{i=2}^{N} (\epsilon_i - \overline{\epsilon})(\epsilon_{i-1} - \overline{\epsilon})}{\sum_{i=1}^N (\epsilon_i - \overline{\epsilon})^2}\text{,}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\overline{\epsilon}\)</span> is the mean value of the residuals. Typical values for the autocorrelation coefficient are <span class="math notranslate nohighlight">\(\sim 0.2-0.3\)</span>. For the next iteration the covariance matrix is modified taking into account the autocorrelation (Prais and Winsten, 1954),</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{\Omega} = \begin{bmatrix}\frac{1}{1-\rho^2} &amp; \frac{\rho}{1-\rho^2} &amp; \frac{\rho^2}{1-\rho^2} &amp; \cdots &amp;\frac{\rho^{n-1}}{1-\rho^2} \\[8pt]\frac{\rho}{1-\rho^2} &amp; \frac{1}{1-\rho^2} &amp; \frac{\rho}{1-\rho^2} &amp; \cdots &amp; \frac{\rho^{n-2}}{1-\rho^2} \\[8pt]\frac{\rho^2}{1-\rho^2} &amp; \frac{\rho}{1-\rho^2}  &amp; \frac{1}{1-\rho^2} &amp; \cdots &amp;  \frac{\rho^{n-3}}{1-\rho^2} \\[8pt]\vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\[8pt]\frac{\rho^{n-1}}{1-\rho^2} &amp; \frac{\rho^{n-2}}{1-\rho^2} &amp; \frac{\rho^{n-3}}{1-\rho^2} &amp; \cdots &amp; \frac{1}{1-\rho^2}\end{bmatrix}\text{.}\end{split}\]</div>
+<p>The covariance matrix is modified accordingly to account for measurement gaps (Savin and White, 1978). This procedure is repeated until the autocorrelation coefficient has converged within some tolerance level. The final error estimate is calculated by scaling <span class="math notranslate nohighlight">\(\mathbf{\Omega}\)</span> to match the observed variance of the residuals.</p>
+</section>
+<section id="Predictors/Configurations">
+<h2>Predictors/Configurations<a class="headerlink" href="#Predictors/Configurations" title="Link to this heading">¶</a></h2>
+<p>There are three standard configurations, the piecewise linear trend (PWLT), independent linear trend (ILT) and the EESC trend configuration. The regression procedure is the same for all configurations, the only difference is the predictors used in the model. Common to all of these baseline regression setups are a set of predictors intended to account for the natural variability of the measurements.</p>
+<ul class="simple">
+<li><p>Two orthogonal components of the QBO from <a class="reference external" href="https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt">https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt</a> which are calculated using principal component analysis</p></li>
+<li><p>Solar 10.7 cm flux from <a class="reference external" href="https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat">https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat</a></p></li>
+<li><p>ENSO without lag from <a class="reference external" href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">http://www.esrl.noaa.gov/psd/enso/mei/table.html</a></p></li>
+<li><p>GISS AOD from <a class="reference external" href="https://data.giss.nasa.gov/modelforce/strataer/">https://data.giss.nasa.gov/modelforce/strataer/</a> which is extended passed 2012 by extrapolating the last value</p></li>
+</ul>
+<p>For convenience all of these predictors have been scaled to have mean 0 and standard deviation 1.</p>
+<p><img alt="Default Predictors" src="_images/predictors_default.png" /> Figure 1 Standard predictors uses in all regression schemes.</p>
+<section id="Piecewise-Linear-Trends">
+<h3>Piecewise Linear Trends<a class="headerlink" href="#Piecewise-Linear-Trends" title="Link to this heading">¶</a></h3>
+<p>The piecewise linear trend consists of two predictors, the first being a linear increase until January 1997 and zero afterwards, and the second zero until January 1997 and a linear increase afterwards. The two predictors are both zero in January 1997 and are thus linked together. In addition an overall constant is added which shifts the value at the inflection point.</p>
+<p><img alt="PWLT Predictors" src="_images/predictors_pwlt.png" /> Figure 2 Predictors added for the piecewise linear trend scheme.</p>
+</section>
+<section id="Independent-Linear-Trends">
+<h3>Independent Linear Trends<a class="headerlink" href="#Independent-Linear-Trends" title="Link to this heading">¶</a></h3>
+<p>The independent linear trend is created using five predictors:</p>
+<ul class="simple">
+<li><p>A linear increase until January 1997 and zero afterwards</p></li>
+<li><p>Zero until January 2000, and a linear increase afterwards</p></li>
+<li><p>Constant until January 1997 and zero afterwards</p></li>
+<li><p>Zero until January 2000 and constant aftwards</p></li>
+<li><p>Constant between January 1997 and January 2000 and zero elsewhere</p></li>
+</ul>
+<p>In both the “pre” and “post” time periods there is both a linear and constant component, allowing the two trends to be treated almost independently of each other. In the gap period between the two an additional constant is added. Because of the nature of the constants added the overall fitted time series is likely to contain jumps in both 1997 and 2000 where the respective trends begin and end.</p>
+<p><img alt="ILT Predictors" src="_images/predictors_ilt.png" /> Figure 3 Predictors added for the independent linear trend scheme.</p>
+</section>
+<section id="Two-Orthogonal-EESC-Trends">
+<h3>Two Orthogonal EESC Trends<a class="headerlink" href="#Two-Orthogonal-EESC-Trends" title="Link to this heading">¶</a></h3>
+<p>Here the overall trend in ozone is accounted for by including two orthogonal components of the EESC. The two components are calculated using principal component analysis on the EESC for different mean ages of air.</p>
+<p><img alt="EESC Predictors" src="_images/predictors_eesc.png" /> Figure 4 Predictors added for the EESC trend scheme.</p>
+</section>
+</section>
+<section id="References">
+<h2>References<a class="headerlink" href="#References" title="Link to this heading">¶</a></h2>
+<p>Cochrane, D., &amp; Orcutt, G. H. (1949). Application of least squares regression to relationships containing auto-correlated error terms. Journal of the American statistical association, 44(245), 32-61.</p>
+<p>Prais, S. J., &amp; Winsten, C. B. (1954). Trend estimators and serial correlation (Vol. 383, pp. 1-26). Chicago: Cowles Commission discussion paper.</p>
+<p>Savin, N. E., &amp; White, K. J. (1978). Testing for Autocorrelation with Missing observations. Econometrica (Pre-1986), 46(1), 59.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="LOTUS Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples/GOZCARDS%20Trends.html" class="btn btn-neutral float-right" title="Trends with the GOZCARDS Dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
