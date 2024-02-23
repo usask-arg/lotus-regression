@@ -30,7 +30,7 @@ jobs:
 
       - name: build wheels
         run: |
-          python -m pip wheel
+          python -m pip wheel .
 
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_version: [py38, py39, py310, py311]
+        py_version: [py310, py311, py312]
 
     steps:
       - name: Checkout repository
