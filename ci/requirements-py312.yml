@@ -1,17 +1,15 @@
 name: test_env
 dependencies:
-  - python=3.4
+  - python=3.12
   - numpy
   - pandas
   - scipy
   - statsmodels
   - xarray
-  - jpeg
   - netcdf4
-  - libnetcdf=4.5
   - hdf5
-  - hdf4
   - dask
+  - pip
   - pip:
     - coveralls
     - pytest-cov

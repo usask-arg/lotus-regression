@@ -11,3 +11,5 @@ dist/
 *.ipynb_checkpoints*
 examples/*
 .DS_store
+src/LOTUS_regression/_version.py
+src/LOTUS_regression/version.py

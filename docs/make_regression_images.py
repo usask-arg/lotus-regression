@@ -1,13 +1,15 @@
 
-# coding: utf-8
 
 # In[ ]:
+from __future__ import annotations
 
-import matplotlib
-matplotlib.use('agg')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 from LOTUS_regression.predictors import load_data
-import matplotlib.pyplot as plt
+
+mpl.use('agg')
+
 
 predictors = load_data('pred_baseline_pwlt.csv')
 
@@ -73,4 +75,3 @@ plt.plot(predictors.index, predictors['eesc_2'])
 plt.legend(['EESC 1', 'EESC 2'])
 
 plt.savefig('source/images/predictors_eesc.png', dpi=400, bbox_inches='tight', transparent=True)
-
