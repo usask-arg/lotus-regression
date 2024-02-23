@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trends with the GOZCARDS Dataset &mdash; LOTUS Regression 0+untagged.1.ge13a272 documentation</title>
+  <title>Trends with the GOZCARDS Dataset &mdash; LOTUS Regression 0+untagged.1.g13d5c5e documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
@@ -14,7 +14,7 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/documentation_options.js?v=4149688a"></script>
+        <script src="../_static/documentation_options.js?v=1dde9c4f"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.ge13a272
+                0+untagged.1.g13d5c5e
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -112,7 +112,6 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">GOZCARDS_FILES</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;/home/runner/work/lotus-regression/lotus-regression/test_data//GOZCARDS/*.nc4&#39;</span>
-
 <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">decode_cf</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span><span class="n">GOZCARDS_FILES</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="s1">&#39;nested&#39;</span><span class="p">,</span> <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s1">&#39;Merged&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;netcdf4&#39;</span><span class="p">))</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">))]</span>
@@ -179,7 +178,7 @@ Index([&#39;enso&#39;, &#39;solar&#39;, &#39;qboA&#39;, &#39;qboB&#39;, &#39;aod
       dtype=&#39;object&#39;)
 </pre></div></div>
 </div>
-<p>Currently our predictors have no seasonal dependence. Add in some seasonal terms with different numbers of Fourier components.</p>
+<p>Currently, our predictors have no seasonal dependence. Add in some seasonal terms with different numbers of Fourier components.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -243,7 +242,8 @@ time
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">],</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">lev</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">65</span><span class="p">,</span> <span class="mi">65</span><span class="p">))</span>   <span class="c1"># remove bins without data</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">],</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="c1"># Convert to ~ percent</span>
 <span class="n">results</span> <span class="o">/=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;average&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
@@ -258,193 +258,25 @@ time
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-&lt;xarray.Dataset&gt; Size: 154kB
-Dimensions:               (lev: 25, lat: 12)
+&lt;xarray.Dataset&gt; Size: 105kB
+Dimensions:               (lev: 17, lat: 12)
 Coordinates:
-  * lev                   (lev) float32 100B 1e+03 681.3 464.2 ... 0.1468 0.1
+  * lev                   (lev) float32 68B 100.0 68.13 46.42 ... 0.3162 0.2154
   * lat                   (lat) float32 48B -55.0 -45.0 -35.0 ... 35.0 45.0 55.0
 Data variables: (12/64)
-    enso                  (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    enso_std              (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    solar                 (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    solar_std             (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    qboA                  (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    qboA_std              (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
+    enso                  (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    enso_std              (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    solar                 (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    solar_std             (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    qboA                  (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    qboA_std              (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
     ...                    ...
-    constant_cos2         (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    constant_cos2_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    constant_sin3         (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    constant_sin3_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    constant_cos3         (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
-    constant_cos3_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(25, 12), meta=np.ndarray&gt;
+    constant_cos2         (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    constant_cos2_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    constant_sin3         (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    constant_sin3_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    constant_cos3         (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
+    constant_cos3_std     (lev, lat) float64 2kB dask.array&lt;chunksize=(17, 12), meta=np.ndarray&gt;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">

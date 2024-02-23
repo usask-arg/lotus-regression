@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOTUS_regression.predictors.download &mdash; LOTUS Regression 0+untagged.1.ge13a272 documentation</title>
+  <title>LOTUS_regression.predictors.download &mdash; LOTUS Regression 0+untagged.1.g13d5c5e documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
 
@@ -12,7 +12,7 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../../_static/documentation_options.js?v=4149688a"></script>
+        <script src="../../../_static/documentation_options.js?v=1dde9c4f"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -33,7 +33,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.ge13a272
+                0+untagged.1.g13d5c5e
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -276,7 +276,6 @@
     <span class="n">solar</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">50</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">50</span><span class="p">:</span> <span class="s1">&#39;f10.7&#39;</span><span class="p">})</span>
     <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">solar</span> <span class="o">!=</span> <span class="mf">999.9</span><span class="p">)</span>
     <span class="n">solar</span> <span class="o">=</span> <span class="n">solar</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;MS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-
     <span class="k">return</span> <span class="n">solar</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span></div>
 
 

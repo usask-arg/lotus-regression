@@ -80,6 +80,7 @@
    },
    "outputs": [],
    "source": [
+    "mzm_data = mzm_data.sel(mean_latitude=slice(-60, 60), altitude=slice(10, 50))  # remove bins without data\n",
     "results = regress_all_bins(predictors, mzm_data['relative_anomaly'], tolerance=0.1)\n",
     "\n",
     "# Convert to ~ percent\n",
