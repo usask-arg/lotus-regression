@@ -34,7 +34,7 @@ jobs:
       - name: build wheels
         shell: bash -el {0}
         run: |
-          python -m pip wheel .
+          python -m pip wheel . -w dist
 
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
