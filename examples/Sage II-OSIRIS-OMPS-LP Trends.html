@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trends with the SAGE II / OSIRIS / OMPS-LP Dataset &mdash; LOTUS Regression 0.8.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
+  <title>Trends with the SAGE II / OSIRIS / OMPS-LP Dataset &mdash; LOTUS Regression 0.8.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/documentation_options.js?v=dbee5847"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=7f96dc5e"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -37,7 +39,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0.8.2
+                0.8
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -121,24 +123,24 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;xarray.Dataset&gt;
+&lt;xarray.Dataset&gt; Size: 14MB
 Dimensions:           (altitude: 59, time: 387, mean_latitude: 13, month: 12)
 Coordinates:
-  * altitude          (altitude) float64 0.0 1.0 2.0 3.0 ... 55.0 56.0 57.0 58.0
-  * time              (time) datetime64[ns] 1984-10-01 1984-11-01 ... 2016-12-01
-    latitude_bin      (mean_latitude) object ...
-  * mean_latitude     (mean_latitude) float64 -60.0 -50.0 -40.0 ... 50.0 60.0
-  * month             (month) int64 1 2 3 4 5 6 7 8 9 10 11 12
+  * altitude          (altitude) float64 472B 0.0 1.0 2.0 3.0 ... 56.0 57.0 58.0
+  * time              (time) datetime64[ns] 3kB 1984-10-01 ... 2016-12-01
+    latitude_bin      (mean_latitude) &lt;U14 728B ...
+  * mean_latitude     (mean_latitude) float64 104B -60.0 -50.0 ... 50.0 60.0
+  * month             (month) int64 96B 1 2 3 4 5 6 7 8 9 10 11 12
 Data variables:
-    anomaly           (mean_latitude, time, altitude) float64 ...
-    relative_anomaly  (mean_latitude, time, altitude) float64 ...
-    std               (mean_latitude, time, altitude) float64 ...
-    relative_std      (mean_latitude, time, altitude) float64 ...
-    count             (mean_latitude, time, altitude) float64 ...
-    osiris_mzm        (mean_latitude, month, altitude) float64 ...
-    sageii_mzm        (mean_latitude, month, altitude) float64 ...
-    omps_mzm          (mean_latitude, month, altitude) float64 ...
-    inst_flags        (mean_latitude, time, altitude) float64 ...
+    anomaly           (mean_latitude, time, altitude) float64 2MB ...
+    relative_anomaly  (mean_latitude, time, altitude) float64 2MB ...
+    std               (mean_latitude, time, altitude) float64 2MB ...
+    relative_std      (mean_latitude, time, altitude) float64 2MB ...
+    count             (mean_latitude, time, altitude) float64 2MB ...
+    osiris_mzm        (mean_latitude, month, altitude) float64 74kB ...
+    sageii_mzm        (mean_latitude, month, altitude) float64 74kB ...
+    omps_mzm          (mean_latitude, month, altitude) float64 74kB ...
+    inst_flags        (mean_latitude, time, altitude) float64 2MB ...
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -165,7 +167,8 @@ Index([&#39;enso&#39;, &#39;solar&#39;, &#39;qboA&#39;, &#39;qboB&#39;, &#39;aod
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">mzm_data</span><span class="p">[</span><span class="s1">&#39;relative_anomaly&#39;</span><span class="p">],</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mzm_data</span> <span class="o">=</span> <span class="n">mzm_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">mean_latitude</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="n">altitude</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>  <span class="c1"># remove bins without data</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">regress_all_bins</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">mzm_data</span><span class="p">[</span><span class="s1">&#39;relative_anomaly&#39;</span><span class="p">],</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="c1"># Convert to ~ percent</span>
 <span class="n">results</span> <span class="o">*=</span> <span class="mi">100</span>
@@ -179,285 +182,25 @@ Index([&#39;enso&#39;, &#39;solar&#39;, &#39;qboA&#39;, &#39;qboB&#39;, &#39;aod
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-
-Intel MKL ERROR: Parameter 5 was incorrect on entry to DTRTRI.
-&lt;xarray.Dataset&gt;
-Dimensions:          (mean_latitude: 13, altitude: 59)
+&lt;xarray.Dataset&gt; Size: 69kB
+Dimensions:          (mean_latitude: 13, altitude: 41)
 Coordinates:
-  * mean_latitude    (mean_latitude) float64 -60.0 -50.0 -40.0 ... 50.0 60.0
-  * altitude         (altitude) float64 0.0 1.0 2.0 3.0 ... 55.0 56.0 57.0 58.0
+  * mean_latitude    (mean_latitude) float64 104B -60.0 -50.0 ... 50.0 60.0
+  * altitude         (altitude) float64 328B 10.0 11.0 12.0 ... 48.0 49.0 50.0
 Data variables: (12/16)
-    enso             (mean_latitude, altitude) float64 nan nan ... 1.096 0.7407
-    enso_std         (mean_latitude, altitude) float64 nan nan ... 0.4803 0.4746
-    solar            (mean_latitude, altitude) float64 nan nan ... 0.5286 0.8473
-    solar_std        (mean_latitude, altitude) float64 nan nan ... 0.7342 0.7259
-    qboA             (mean_latitude, altitude) float64 nan nan ... -0.359
-    qboA_std         (mean_latitude, altitude) float64 nan nan ... 0.4608 0.4559
+    enso             (mean_latitude, altitude) float64 4kB -1.528 ... 0.3204
+    enso_std         (mean_latitude, altitude) float64 4kB 1.173 ... 0.3949
+    solar            (mean_latitude, altitude) float64 4kB -0.9302 ... 0.4314
+    solar_std        (mean_latitude, altitude) float64 4kB 1.215 ... 0.4279
+    qboA             (mean_latitude, altitude) float64 4kB -3.226 ... -0.5349
+    qboA_std         (mean_latitude, altitude) float64 4kB 1.137 ... 0.3806
     ...               ...
-    linear_pre       (mean_latitude, altitude) float64 nan nan ... 7.96e-16
-    linear_pre_std   (mean_latitude, altitude) float64 nan nan ... 2.331e-15
-    linear_post      (mean_latitude, altitude) float64 nan nan ... 3.685 2.928
-    linear_post_std  (mean_latitude, altitude) float64 nan nan ... 1.145 1.137
-    constant         (mean_latitude, altitude) float64 nan nan ... -6.11 -3.712
-    constant_std     (mean_latitude, altitude) float64 nan nan ... 4.174 4.148
+    linear_pre       (mean_latitude, altitude) float64 4kB 7.944 ... -6.499
+    linear_pre_std   (mean_latitude, altitude) float64 4kB 4.169 3.295 ... 1.361
+    linear_post      (mean_latitude, altitude) float64 4kB -12.62 ... 3.515
+    linear_post_std  (mean_latitude, altitude) float64 4kB 2.199 1.704 ... 0.717
+    constant         (mean_latitude, altitude) float64 4kB 14.9 9.552 ... -4.378
+    constant_std     (mean_latitude, altitude) float64 4kB 2.684 ... 0.7894
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -491,7 +234,7 @@ Data variables: (12/16)
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+    <p>&#169; Copyright 2024, USask ARG and the LOTUS Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
