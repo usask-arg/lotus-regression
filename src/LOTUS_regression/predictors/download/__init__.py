@@ -60,11 +60,14 @@ def load_enso(lag_months=0):
         header=None,
     )
     assert data.index[0] == 1979
-    data = data.melt()
+    data = data.to_numpy().flatten()
     data = data[data > -998]
-    data.index = pd.date_range(start="1979", periods=len(data), freq="M").to_period()
 
-    return data.shift(lag_months)["value"]
+    data = pd.DataFrame(
+        data, index=pd.date_range(start="1979", periods=len(data), freq="M").to_period()
+    )
+
+    return data.shift(lag_months)
 
 
 def load_linear(inflection=1997):
