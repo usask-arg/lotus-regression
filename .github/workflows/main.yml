@@ -34,7 +34,11 @@ jobs:
       - name: build wheels
         shell: bash -el {0}
         run: |
-          python -m pip wheel . -w dist
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+          git clean -xdf
+          git restore -SW .
+          python -m build
 
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
