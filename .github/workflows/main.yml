@@ -20,8 +20,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-      - name: Setup Conda build environment 
+      - name: Setup Conda build environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test_env
@@ -29,8 +32,9 @@ jobs:
           auto-activate-base: false
 
       - name: build wheels
+        shell: bash -el {0}
         run: |
-          python setup.py bdist_wheel
+          python -m pip wheel .
 
       - name: Save wheel artifacts
         uses: actions/upload-artifact@v3
@@ -42,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_version: [py38, py39, py310, py311]
+        py_version: [py310, py311, py312]
 
     steps:
       - name: Checkout repository
@@ -57,7 +61,7 @@ jobs:
       - name: Test package
         shell: bash -el {0}
         run: |
-          python setup.py install
+          pip install .
           py.test
 
   build-docs:
@@ -71,7 +75,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Conda build environment 
+      - name: Setup Conda build environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: doc_env
@@ -81,7 +85,7 @@ jobs:
       - name: Build Sphinx Docs
         shell: bash -el {0}
         run: |
-          python setup.py install
+          pip install .
           cd docs
           mkdir -p source/images
           python make_regression_images.py
@@ -92,7 +96,7 @@ jobs:
         with:
           name: docs
           path: docs/build/html
-      
+
   upload-docs-to-pages:
     needs: build-docs
     runs-on: ubuntu-latest
@@ -146,7 +150,7 @@ jobs:
         with:
           repository_url: https://test.pypi.org/legacy/
           verbose: true
-  
+
   upload-to-pypi:
     needs: [test-package, build-docs, build-wheels]
     if: github.event_name == 'release'

@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>64", "wheel", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LOTUS-regression"
+dynamic = ["version"]
+description="Regression model developed for the LOTUS project"
+readme = "README.md"
+dependencies = ['numpy', 'scipy', 'pandas', 'xarray', 'statsmodels', 'requests', 'appdirs']
+authors = [
+    { name = "usask-arg", email = "daniel.zawada@usask.ca" },
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools_scm]
+write_to = "src/LOTUS_regression/_version.py"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = [
+    "ignore:(ast.Str|Attribute s|ast.NameConstant|ast.Num) is deprecated:DeprecationWarning:_pytest",  # Python 3.12
+]
+testpaths = ["tests"]
+
+[tool.ruff]
+select = [
+    "E", "F", "W", # flake8
+    "B",           # flake8-bugbear
+    "I",           # isort
+    "ARG",         # flake8-unused-arguments
+    "C4",          # flake8-comprehensions
+    "EM",          # flake8-errmsg
+    "ICN",         # flake8-import-conventions
+    "ISC",         # flake8-implicit-str-concat
+    "G",           # flake8-logging-format
+    "PGH",         # pygrep-hooks
+    "PIE",         # flake8-pie
+    "PL",          # pylint
+    "PT",          # flake8-pytest-style
+    "PTH",         # flake8-use-pathlib
+    "RET",         # flake8-return
+    "RUF",         # Ruff-specific
+    "SIM",         # flake8-simplify
+    "T20",         # flake8-print
+    "UP",          # pyupgrade
+    "YTT",         # flake8-2020
+    "EXE",         # flake8-executable
+    "NPY",         # NumPy specific rules
+    "PD",          # pandas-vet
+]
+extend-ignore = [
+    "PLR",    # Design related pylint codes
+    "E501",   # Line too long
+]
+src = ["src"]
+unfixable = [
+    "T20",  # Removes print statements
+    "F841", # Removes unused variables
+    "F401", # Removes unused imports
+]
+flake8-unused-arguments.ignore-variadic-names = true
+isort.required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.per-file-ignores]
+"tests/**" = ["T20", "PT009"]
+"**__init__.py" = ["F401"]
