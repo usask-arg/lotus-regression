@@ -64,7 +64,7 @@ def load_enso(lag_months=0):
     data = data[data > -998]
     data.index = pd.date_range(start="1979", periods=len(data), freq="M").to_period()
 
-    return data.shift(lag_months)
+    return data.shift(lag_months)["value"]
 
 
 def load_linear(inflection=1997):
@@ -201,6 +201,7 @@ def load_qbo(pca=3):
         "https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt",
         skiprows=9,
         header=None,
+        index_col=False,
         names=[
             "Month",
             "Year",

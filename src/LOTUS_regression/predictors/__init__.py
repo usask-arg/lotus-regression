@@ -144,10 +144,10 @@ def make_extra_predictors():
 
 
 if __name__ == "__main__":
-    # make_extra_predictors()
+    make_extra_predictors()
     make_baseline_pwlt()
-    # make_baseline_ilt()
-    # make_baseline_ilt(True)
-    # make_baseline_ilt(False, True)
+    make_baseline_ilt()
+    make_baseline_ilt(True)
+    make_baseline_ilt(False, True)
     # make_baseline_eesc()
     # remake_example_data()
