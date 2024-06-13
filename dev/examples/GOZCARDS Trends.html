@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trends with the GOZCARDS Dataset &mdash; LOTUS Regression 0+untagged.1.g13d5c5e documentation</title>
+  <title>Trends with the GOZCARDS Dataset &mdash; LOTUS Regression 0.1.dev1+g1d49c4a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
@@ -14,8 +14,8 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/documentation_options.js?v=1dde9c4f"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/documentation_options.js?v=dbd1dde5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -39,7 +39,7 @@
             LOTUS Regression
           </a>
               <div class="version">
-                0+untagged.1.g13d5c5e
+                0.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -126,8 +126,8 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 &lt;xarray.Dataset&gt; Size: 47MB
-Dimensions:               (lat: 12, lev: 25, time: 384, data_source: 6,
-                           overlap: 6)
+Dimensions:               (time: 384, data_source: 6, overlap: 6, lev: 25,
+                           lat: 12)
 Coordinates:
   * lat                   (lat) float32 48B -55.0 -45.0 -35.0 ... 35.0 45.0 55.0
   * lev                   (lev) float32 100B 1e+03 681.3 464.2 ... 0.1468 0.1
@@ -196,19 +196,19 @@ Index([&#39;enso&#39;, &#39;solar&#39;, &#39;qboA&#39;, &#39;qboB&#39;, &#39;aod
 <div class="highlight"><pre>
                 enso     solar      qboA      qboB       aod  linear_pre  \
 time
-1979-01-01  0.545353  1.581821 -1.071557 -0.948523 -0.410788   -1.800000
-1979-02-01  0.342144  1.636272 -0.835098 -0.887104 -0.411355   -1.791667
-1979-03-01  0.027170  1.321658 -1.171239 -0.621723 -0.412482   -1.783333
-1979-04-01  0.331984  1.133807 -1.232609 -0.554725 -0.415366   -1.775000
-1979-05-01  0.423428  1.006939 -1.229580 -0.043544 -0.419356   -1.766667
+1979-01-01  0.534698  1.578955 -1.067789  0.952231 -0.411760   -1.800000
+1979-02-01  0.351147  1.633527 -0.831698  0.892204 -0.412330   -1.791667
+1979-03-01  0.004440  1.318208 -1.168007  0.628544 -0.413462   -1.783333
+1979-04-01  0.269569  1.129935 -1.229261  0.561389 -0.416360   -1.775000
+1979-05-01  0.330752  1.002783 -1.226434  0.052783 -0.420368   -1.766667
 
             linear_post  constant  qboA_sin0  qboA_cos0  ...  \
 time                                                     ...
-1979-01-01          0.0       1.0  -0.000000  -1.071557  ...
-1979-02-01          0.0       1.0  -0.424528  -0.719142  ...
-1979-03-01          0.0       1.0  -0.994909  -0.618026  ...
-1979-04-01          0.0       1.0  -1.232295  -0.027828  ...
-1979-05-01          0.0       1.0  -1.082870   0.582460  ...
+1979-01-01          0.0       1.0  -0.000000  -1.067789  ...
+1979-02-01          0.0       1.0  -0.422799  -0.716214  ...
+1979-03-01          0.0       1.0  -0.992164  -0.616320  ...
+1979-04-01          0.0       1.0  -1.228947  -0.027752  ...
+1979-05-01          0.0       1.0  -1.080099   0.580970  ...
 
             linear_post_sin1  linear_post_cos1  constant_sin0  constant_cos0  \
 time
@@ -310,7 +310,7 @@ Data variables: (12/64)
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2017, USask ARG and the LOTUS Group.</p>
+    <p>&#169; Copyright 2024, USask ARG and the LOTUS Group.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

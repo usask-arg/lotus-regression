@@ -32,6 +32,10 @@ Development
 -----------
 The model is open-source and can be found at https://github.com/usask-arg/lotus-regression
 
+What's New in Version 0.8.3
+---------------------------
+ * Updated predictors
+
 What's New in Version 0.8.2
 ---------------------------
  * Updated the code to be compatible with the newest version of pandas
