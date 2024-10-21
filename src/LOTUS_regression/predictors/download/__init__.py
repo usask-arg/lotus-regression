@@ -89,9 +89,11 @@ def load_linear(inflection=1997):
         / 120
         * pd.Series(
             [
-                t - 12 * (inflection - (start_year + 1))
-                if t < 12 * (inflection - (start_year + 1))
-                else 0
+                (
+                    t - 12 * (inflection - (start_year + 1))
+                    if t < 12 * (inflection - (start_year + 1))
+                    else 0
+                )
                 for t in range(num_months)
             ],
             index=index,
@@ -103,9 +105,11 @@ def load_linear(inflection=1997):
         / 120
         * pd.Series(
             [
-                t - 12 * (inflection - (start_year + 1))
-                if t > 12 * (inflection - (start_year + 1))
-                else 0
+                (
+                    t - 12 * (inflection - (start_year + 1))
+                    if t > 12 * (inflection - (start_year + 1))
+                    else 0
+                )
                 for t in range(num_months)
             ],
             index=index,
