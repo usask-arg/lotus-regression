@@ -116,7 +116,7 @@ def make_baseline_eesc():
     pred -= pred.mean()
     pred /= pred.std()
 
-    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc('/media/valhalla/LOTUS/proxies/EESC_Damadeo/EESC.txt')[['eesc_1', 'eesc_2']]
+    pred[['eesc_1', 'eesc_2']] = download.load_orthogonal_eesc('/media/datastore/data_products/LOTUS/proxies/EESC_Damadeo/EESC.txt')[['eesc_1', 'eesc_2']]
 
     pred['constant'] = np.ones(len(pred.index))
 
@@ -137,10 +137,10 @@ def make_extra_predictors():
 
 
 if __name__ == "__main__":
-    #make_extra_predictors()
+    make_extra_predictors()
     make_baseline_pwlt()
-    #make_baseline_ilt()
-    #make_baseline_ilt(True)
-    #make_baseline_ilt(False, True)
-    #make_baseline_eesc()
-    #remake_example_data()
+    make_baseline_ilt()
+    make_baseline_ilt(True)
+    make_baseline_ilt(False, True)
+    make_baseline_eesc()
+    remake_example_data()

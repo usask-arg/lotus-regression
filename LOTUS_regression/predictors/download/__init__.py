@@ -147,9 +147,9 @@ def load_qbo(pca=3):
 
     data = pd.read_table('https://acd-ext.gsfc.nasa.gov/Data_services/met/qbo/QBO_Singapore_Uvals_GSFC.txt',
                          skiprows=9, header=None, names=['Month', 'Year', '300', '250', '200', '150', '100', '90', '80',
-                                                         '70', '50', '40', '30', '20', '15', '10'], delim_whitespace=True)
+                                                         '70', '50', '40', '30', '20', '15', '10', 'Phase'], delim_whitespace=True)
     data.index = pd.to_datetime({'year': data['Year'], 'month': data['Month'], 'day': np.ones(len(data))})
-    data = data.drop(columns=['Year', 'Month'])
+    data = data.drop(columns=['Year', 'Month', 'Phase'])
     data.index = data.index.to_period(freq='M')
 
     if pca > 0:
