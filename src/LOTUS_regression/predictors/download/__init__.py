@@ -32,9 +32,7 @@ def _download_netcdf_if_needed(url, save_path):
 
     response = requests.get(url, timeout=60)
     response.raise_for_status()
-    if not (
-        response.content.startswith(b"CDF") or response.content[:4] == b"\x89HDF"
-    ):
+    if not (response.content.startswith(b"CDF") or response.content[:4] == b"\x89HDF"):
         msg = f"Downloaded data from {url} is not a NetCDF file"
         raise ValueError(msg)
 
@@ -121,9 +119,7 @@ def load_linear(inflection=1997):
     t = np.arange(len(index))
     inflection_index = pd.Period(f"{inflection}-01", freq="M").ordinal - start.ordinal
 
-    pre = pd.Series(
-        np.minimum(t - inflection_index, 0) / 120, index=index, name="pre"
-    )
+    pre = pd.Series(np.minimum(t - inflection_index, 0) / 120, index=index, name="pre")
     post = pd.Series(
         np.maximum(t - inflection_index, 0) / 120, index=index, name="post"
     )
