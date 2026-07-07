@@ -28,7 +28,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test_env
-          environment-file: ci/requirements-py310.yml
+          environment-file: ci/requirements-py312.yml
           auto-activate-base: false
 
       - name: build wheels
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_version: [py310, py311, py312]
+        py_version: [py312, py313]
 
     steps:
       - name: Checkout repository

@@ -136,6 +136,7 @@ def make_extra_predictors():
     pred["tropopause_pressure"] = download.load_trop(True)
 
     pred.index.name = "time"
+    pred = pred.dropna()
 
     pred -= pred.mean()
     pred /= pred.std()

@@ -11,15 +11,15 @@ Installation
 
 Requirements
 ^^^^^^^^^^^^
-The code is tested on Python versions `3.8, 3.9, 3.10, 3.11` and should work on any of them,
+The code is tested on Python versions `3.12` and `3.13` and should work on any of them,
 however we recommend using the `Anaconda python distribution <https://www.continuum.io/downloads>`_ which by default comes with Python
-version `3.x`.  Some of the example code may also be incompatible with Python `2.7`
+version `3.x`.
 
-A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs, netcdf4, dask`
+A minimal set of requirements are the Python packages `numpy, scipy, pandas, statsmodels, xarray, requests, appdirs, scikit-learn, netcdf4, dask`
 which should be automatically be installed upon installing the package, if you are using anaconda you can verify/install
 that these packages are available by running::
 
-   conda install numpy scipy pandas xarray statsmodels requests appdirs netcdf4 dask
+   conda install -c conda-forge numpy scipy pandas xarray statsmodels requests appdirs scikit-learn netcdf4 dask
 
 How To Install
 ^^^^^^^^^^^^^^

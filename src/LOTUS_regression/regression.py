@@ -382,6 +382,7 @@ def mzm_regression(
         # variable transformations are still valid
         if do_autocorrelation:
             rho, _ = sm.regression.yule_walker(results.resid, order=1)
+            rho = float(np.squeeze(rho))
         else:
             rho = 0
 
