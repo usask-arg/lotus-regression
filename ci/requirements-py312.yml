@@ -1,4 +1,6 @@
 name: test_env
+channels:
+  - conda-forge
 dependencies:
   - python=3.12
   - numpy
@@ -9,6 +11,8 @@ dependencies:
   - netcdf4
   - hdf5
   - dask
+  - scikit-learn
+  - requests
   - pip
   - pip:
     - coveralls

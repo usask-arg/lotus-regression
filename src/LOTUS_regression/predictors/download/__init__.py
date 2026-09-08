@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import ftplib
-import os
 import time
-from datetime import datetime
-from io import StringIO
 from pathlib import Path
 
 import appdirs
@@ -12,6 +9,42 @@ import numpy as np
 import pandas as pd
 import requests
 import xarray as xr
+
+
+def _current_month_period():
+    today = pd.to_datetime("today")
+    return pd.Period(year=today.year, month=today.month, freq="M")
+
+
+def _is_netcdf_file(path):
+    with Path.open(path, "rb") as f:
+        magic = f.read(4)
+    return magic.startswith(b"CDF") or magic == b"\x89HDF"
+
+
+def _download_netcdf_if_needed(url, save_path):
+    directory = save_path.parent
+    if not directory.exists():
+        directory.mkdir(parents=True)
+
+    if save_path.exists() and _is_netcdf_file(save_path):
+        return
+
+    response = requests.get(url, timeout=60)
+    response.raise_for_status()
+    if not (response.content.startswith(b"CDF") or response.content[:4] == b"\x89HDF"):
+        msg = f"Downloaded data from {url} is not a NetCDF file"
+        raise ValueError(msg)
+
+    with Path.open(save_path, "wb") as f:
+        f.write(response.content)
+
+
+def _timedelta_years(delta):
+    if not np.issubdtype(delta.dtype, np.timedelta64):
+        msg = f"Expected timedelta values, got {delta.dtype}"
+        raise TypeError(msg)
+    return delta.astype("timedelta64[ns]").astype(np.int64) / float(31556952000000000)
 
 
 def load_eesc():
@@ -35,7 +68,7 @@ def load_eesc():
     num_months = (
         12 * (pd.to_datetime("today").year - 1979) + pd.to_datetime("today").month
     )
-    index = pd.date_range("1979-01", periods=num_months, freq="M").to_period(freq="M")
+    index = pd.period_range("1979-01", periods=num_months, freq="M")
     return pd.Series(
         [np.polyval(poly, month / 12) for month in range(num_months)], index=index
     )
@@ -64,7 +97,7 @@ def load_enso(lag_months=0):
     data = data[data > -998]
 
     data = pd.DataFrame(
-        data, index=pd.date_range(start="1979", periods=len(data), freq="M").to_period()
+        data, index=pd.period_range(start="1979-01", periods=len(data), freq="M")
     )
 
     return data.shift(lag_months)
@@ -78,39 +111,17 @@ def load_linear(inflection=1997):
     ----------
     inflection : int, Optional. Default 1997
     """
-    start_year = 1974
+    start = pd.Period("1975-01", freq="M")
+    today = pd.to_datetime("today")
+    end = pd.Period(year=today.year, month=today.month, freq="M")
+    index = pd.period_range(start=start, end=end, freq="M")
 
-    num_months = (
-        12 * (pd.to_datetime("today").year - start_year) + pd.to_datetime("today").month
-    )
-    index = pd.date_range("1975-01", periods=num_months, freq="M").to_period(freq="M")
-    pre = (
-        1
-        / 120
-        * pd.Series(
-            [
-                t - 12 * (inflection - (start_year + 1))
-                if t < 12 * (inflection - (start_year + 1))
-                else 0
-                for t in range(num_months)
-            ],
-            index=index,
-            name="pre",
-        )
-    )
-    post = (
-        1
-        / 120
-        * pd.Series(
-            [
-                t - 12 * (inflection - (start_year + 1))
-                if t > 12 * (inflection - (start_year + 1))
-                else 0
-                for t in range(num_months)
-            ],
-            index=index,
-            name="post",
-        )
+    t = np.arange(len(index))
+    inflection_index = pd.Period(f"{inflection}-01", freq="M").ordinal - start.ordinal
+
+    pre = pd.Series(np.minimum(t - inflection_index, 0) / 120, index=index, name="pre")
+    post = pd.Series(
+        np.maximum(t - inflection_index, 0) / 120, index=index, name="post"
     )
     return pd.concat([pre, post], axis=1)
 
@@ -125,23 +136,13 @@ def load_independent_linear(pre_trend_end="1997-01-01", post_trend_start="2000-0
 
     post_trend_start: str, Optional.  Default '2000-01-01'
     """
-    NS_IN_YEAR = float(31556952000000000)
-
-    start_year = 1974
-
-    num_months = (
-        12 * (pd.to_datetime("today").year - start_year) + pd.to_datetime("today").month
-    )
-    index = pd.date_range("1975-01", periods=num_months, freq="M").to_period(freq="M")
+    index = pd.period_range("1975-01", end=_current_month_period(), freq="M")
 
     pre_delta = -1 * (index.to_timestamp() - pd.to_datetime(pre_trend_end)).to_numpy()
     post_delta = (index.to_timestamp() - pd.to_datetime(post_trend_start)).to_numpy()
 
-    assert pre_delta.dtype == np.dtype("<m8[ns]")
-    assert post_delta.dtype == np.dtype("<m8[ns]")
-
-    pre_delta = pre_delta.astype(np.int64) / NS_IN_YEAR
-    post_delta = post_delta.astype(np.int64) / NS_IN_YEAR
+    pre_delta = _timedelta_years(pre_delta)
+    post_delta = _timedelta_years(post_delta)
 
     pre_const = np.ones_like(pre_delta)
     pre_const[pre_delta < 0] = 0
@@ -161,7 +162,7 @@ def load_independent_linear(pre_trend_end="1997-01-01", post_trend_start="2000-0
         gap_linear[pre_plus_post == 1] = 0
 
         lt = (index.to_timestamp() - pd.to_datetime(pre_trend_end)).to_numpy()
-        lt = lt.astype(np.int64) / NS_IN_YEAR
+        lt = _timedelta_years(lt)
         gap_linear *= lt
 
         gap_constant = pd.Series(gap_constant, index=index, name="gap_const")
@@ -223,7 +224,8 @@ def load_qbo(pca=3):
             "15",
             "10",
         ],
-        delim_whitespace=True,
+        usecols=range(16),
+        sep=r"\s+",
     )
     data.index = pd.to_datetime(
         {"year": data["Year"], "month": data["Month"], "day": np.ones(len(data))}
@@ -248,7 +250,7 @@ def load_solar():
     data = pd.read_table(
         "https://spdf.gsfc.nasa.gov/pub/data/omni/low_res_omni/omni2_all_years.dat",
         header=None,
-        delim_whitespace=True,
+        sep=r"\s+",
     )
     data.index = pd.to_datetime(
         data[0] * 1000 + data[1], format="%Y%j"
@@ -312,7 +314,7 @@ def load_ao():
     """
     data = pd.read_table(
         "http://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/monthly.ao.index.b50.current.ascii",
-        delim_whitespace=True,
+        sep=r"\s+",
         header=None,
         names=["year", "month", "ao"],
     )
@@ -327,7 +329,7 @@ def load_ao():
 def load_aao():
     data = pd.read_table(
         "http://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/aao/monthly.aao.index.b79.current.ascii",
-        delim_whitespace=True,
+        sep=r"\s+",
         header=None,
         names=["year", "month", "aao"],
     )
@@ -346,7 +348,7 @@ def load_nao():
     """
     data = pd.read_table(
         "http://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/norm.nao.monthly.b5001.current.ascii",
-        delim_whitespace=True,
+        sep=r"\s+",
         header=None,
         names=["year", "month", "nao"],
     )
@@ -365,7 +367,7 @@ def load_ehf(filename):
     """
     data = pd.read_table(
         filename,
-        delim_whitespace=True,
+        sep=r"\s+",
         header=None,
         skiprows=4,
         names=["year", "month", "sh_ehf", "nh_ehf"],
@@ -384,21 +386,11 @@ def load_giss_aod():
     """
     Loads the giss aod index from giss
     """
-    filename = "tau_map_2012-12.nc"
+    filename = "tau_reff_Sato-Lacis.nc"
+    url = "https://data.giss.nasa.gov/modelforce/strataer/data/tau_reff_Sato-Lacis.nc"
 
     save_path = Path(appdirs.user_data_dir()) / filename
-    directory = save_path.parent
-    if not directory.exists():
-        directory.mkdir(parents=True)
-
-    # Only fetch from the ftp if the file does not exist
-    if not save_path.exists() or time.time():
-        r = requests.get(
-            r"https://data.giss.nasa.gov/modelforce/strataer/tau_map_2012-12.nc"
-        )
-
-        with Path.open(save_path, "wb") as f:
-            f.write(r.content)
+    _download_netcdf_if_needed(url, save_path)
 
     data = xr.open_dataset(save_path)
 
@@ -407,53 +399,39 @@ def load_giss_aod():
     data.index = data.index.to_period(freq="M")
     data.index.names = ["time"]
 
-    # Find the last non-zero entry and extend to the current date
-    last_nonzero_idx = data[data["tau"] != 0].index[-1]
-    last_nonzero_idx = np.argmax(data.index == last_nonzero_idx)
+    # Find the last valid non-zero entry and extend to the current date.
+    valid_tau = data["tau"].dropna()
+    last_nonzero_period = valid_tau[valid_tau != 0].index[-1]
+    last_nonzero_idx = data.index.get_loc(last_nonzero_period)
 
-    # Extend the index to approximately now
-    num_months = (
-        12 * (pd.to_datetime("today").year - data.index[0].year)
-        + pd.to_datetime("today").month
-    )
-    index = pd.date_range(
-        data.index[0].to_timestamp(), periods=num_months, freq="M"
-    ).to_period(freq="M")
+    index = pd.period_range(data.index[0], end=_current_month_period(), freq="M")
 
     # New values
     vals = np.zeros(len(index))
-    vals[:last_nonzero_idx] = data["tau"].to_numpy()[:last_nonzero_idx]
-    vals[last_nonzero_idx:] = data["tau"].to_numpy()[last_nonzero_idx]
+    vals[: last_nonzero_idx + 1] = data["tau"].to_numpy()[: last_nonzero_idx + 1]
+    vals[last_nonzero_idx + 1 :] = data["tau"].to_numpy()[last_nonzero_idx]
 
     return pd.Series(vals, index=index, name="aod")
 
 
 def load_glossac_aod():
-    data = xr.open_dataset(
-        "https://opendap.larc.nasa.gov/opendap/GloSSAC/GloSSAC_2.21/GloSSAC_V2.21.nc"
+    filename = "tau_reff_GloSSAC.v2.24.nc"
+    url = (
+        "https://data.giss.nasa.gov/modelforce/strataer/data/"
+        "tau_reff_GloSSAC.v2.24.nc"
     )
 
-    times = data.time.to_numpy()
-    years = times // 100
-    months = times % 100
+    save_path = Path(appdirs.user_data_dir()) / filename
+    _download_netcdf_if_needed(url, save_path)
 
-    # Extend the index to approximately now
-    num_months = (
-        12 * (pd.to_datetime("today").year - years[0]) + pd.to_datetime("today").month
-    )
-    index = pd.date_range(
-        pd.to_datetime(datetime(year=years[0], month=months[0], day=1)),
-        periods=num_months,
-        freq="M",
-    ).to_period(freq="M")
+    data = xr.open_dataset(save_path)
 
-    aod = data.sel(wavelengths_glossac=525)["Glossac_Aerosol_Optical_Depth"].to_numpy()
-    latitudes = data.lat.to_numpy()
-    integration_weights = np.cos(np.deg2rad(latitudes))
-    integration_weights /= np.nansum(integration_weights)
+    data = data.mean(dim="lat")["tau"].to_dataframe()
+    data.index = data.index.to_period(freq="M")
+    data.index.names = ["time"]
 
-    aod = np.trapz(aod * integration_weights[np.newaxis, :], axis=1)
-
+    index = pd.period_range(data.index[0], end=_current_month_period(), freq="M")
+    aod = data["tau"].to_numpy()
     extended_aod = np.zeros(len(index))
     extended_aod[: len(aod)] = aod
     extended_aod[len(aod) :] = aod[-1]
@@ -467,14 +445,14 @@ def load_solar_mg2():
     """
     data = pd.read_table(
         "http://www.iup.uni-bremen.de/gome/solar/MgII_composite.dat",
-        delim_whitespace=True,
+        sep=r"\s+",
         skiprows=23,
         names=["year", "month", "day", "index", "error", "id"],
         parse_dates={"time": [0, 1, 2]},
         index_col="time",
     )
 
-    return data.resample("1M").mean().to_period(freq="M")["index"]
+    return data.resample("ME").mean().to_period(freq="M")["index"]
 
 
 def load_orthogonal_eesc(filename):
@@ -482,7 +460,7 @@ def load_orthogonal_eesc(filename):
     Calculates two orthogonal eesc terms from the predicted eesc at 6 different ages of air, uses the EESC.txt
     datafile from the LOTUS ftp server in the folder EESC_Damadeo
     """
-    data = pd.read_table(filename, delim_whitespace=True, header=3)
+    data = pd.read_table(filename, sep=r"\s+", header=3)
 
     import sklearn.decomposition as decomp
 

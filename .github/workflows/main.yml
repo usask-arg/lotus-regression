@@ -28,7 +28,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test_env
-          environment-file: ci/requirements-py310.yml
+          environment-file: ci/requirements-py312.yml
           auto-activate-base: false
 
       - name: build wheels
@@ -41,7 +41,7 @@ jobs:
           python -m build
 
       - name: Save wheel artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_version: [py310, py311, py312]
+        py_version: [py312, py313]
 
     steps:
       - name: Checkout repository
@@ -96,7 +96,7 @@ jobs:
           make html
 
       - name: Save doc pages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docs
           path: docs/build/html
@@ -111,7 +111,7 @@ jobs:
 
     steps:
       - name: Download doc artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docs
           path: docs
@@ -144,7 +144,7 @@ jobs:
 
     steps:
       - name: Download linux wheel artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels
           path: dist
@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Download linux wheel artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wheels
           path: dist

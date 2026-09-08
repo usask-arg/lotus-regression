@@ -7,17 +7,27 @@ name = "LOTUS-regression"
 dynamic = ["version"]
 description="Regression model developed for the LOTUS project"
 readme = "README.md"
-dependencies = ['numpy', 'scipy', 'pandas', 'xarray', 'statsmodels', 'requests', 'appdirs']
+dependencies = [
+    "appdirs>=1.4.4",
+    "dask>=2026.7.0",
+    "netCDF4>=1.7.4",
+    "numpy>=2.5.1",
+    "pandas>=3.0.3",
+    "requests>=2.34.2",
+    "scikit-learn>=1.9.0",
+    "scipy>=1.18.0",
+    "statsmodels>=0.14.6",
+    "xarray>=2026.4.0",
+]
 authors = [
     { name = "usask-arg", email = "daniel.zawada@usask.ca" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [project.optional-dependencies]
@@ -33,7 +43,7 @@ xfail_strict = true
 filterwarnings = [
     "ignore:(ast.Str|Attribute s|ast.NameConstant|ast.Num) is deprecated:DeprecationWarning:_pytest",  # Python 3.12
 ]
-testpaths = ["tests"]
+testpaths = ["src/LOTUS_regression/tests"]
 
 [tool.ruff]
 select = [
