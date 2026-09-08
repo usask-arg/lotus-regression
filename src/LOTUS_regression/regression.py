@@ -11,6 +11,20 @@ import statsmodels.api as sm
 import xarray as xr
 
 
+class _GLS(sm.GLS):
+    """GLS that removes scratch values from the covariance-whitening factor."""
+
+    def initialize(self):
+        # Statsmodels inverts a lower Cholesky factor. With SciPy 1.18 and
+        # Apple Accelerate, the unused upper triangle can contain scratch
+        # values that survive that inversion. Clear them before initialize()
+        # whitens either the observations or predictors with a full matrix dot.
+        # See https://github.com/pytorch/pytorch/pull/179154 for the LAPACK issue.
+        if self.cholsigmainv is not None and self.cholsigmainv.ndim == 2:
+            self.cholsigmainv = np.tril(self.cholsigmainv)
+        super().initialize()
+
+
 def _corrected_ar1_covariance(sigma, gaps, rho):
     """
     Calculates the corrected covariance matrix accounting for AR1 structure, this is the Prais and Winsten covariance
@@ -350,7 +364,7 @@ def mzm_regression(
     # Main loop
     for i in range(max_iter):
         # GLS Model
-        model = sm.GLS(Y, X, covar)
+        model = _GLS(Y, X, covar)
         results = model.fit()
 
         if constrain_ilt_gap:
